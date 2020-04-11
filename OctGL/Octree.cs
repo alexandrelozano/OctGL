@@ -51,7 +51,6 @@ namespace OctGL
 
         public double octants;
         public double octantsMax;
-        public double octantsFilled;
 
         public double textureCoordinates;
         public double textureCoordinatesMax;
@@ -110,7 +109,6 @@ namespace OctGL
                         break;
                     case '1':
                         current.state = OctreeStates.Full;
-                        octantsFilled++;
                         break;
                     case '(':
                         current.state = OctreeStates.Mixted;
@@ -171,7 +169,6 @@ namespace OctGL
             Octree current = this;
             int emptyChilds;
             int fullChilds;
-            octantsFilled = 0;
 
             st.Push(current);
             while (st.Count > 0)
@@ -221,8 +218,6 @@ namespace OctGL
                         {
                             current.childs[j] = null;
                         }
-
-                        octantsFilled++;
                     }
                     else if (emptyChilds == 8)
                     {
@@ -240,9 +235,6 @@ namespace OctGL
                             st.Push(current.childs[j]);
                         }
                     }
-                }else if (current.state == OctreeStates.Full)
-                {
-                    octantsFilled++;
                 }
             }
         }
@@ -498,7 +490,6 @@ namespace OctGL
                     else
                     {
                         root.octants++;
-                        root.octantsFilled++;
                     }
                 }
                 else

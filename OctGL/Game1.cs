@@ -137,7 +137,7 @@ namespace OctGL
                 textureCrate = Texture2D.FromStream(this.GraphicsDevice, stream);
             }
 
-            ui.CreateUI();
+            ui.BuildUI();
         }
 
         /// <summary>
