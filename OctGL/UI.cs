@@ -33,7 +33,7 @@ namespace OctGL
             Desktop.Render();
         }
 
-        public void BuildUI()
+        public void CreateUI()
         {
             var horizontalBox = new Myra.Graphics2D.UI.HorizontalStackPanel();
             horizontalBox.ShowGridLines = true;
@@ -82,85 +82,7 @@ namespace OctGL
             _menuFile.Id = "_menuFile";
             _menuFile.Text = "File";
 
-            var _mnuOpenModel = new MenuItem();
-            _mnuOpenModel.Id = "_menuOpenModel";
-            _mnuOpenModel.Text = "Open model...";
-            _mnuOpenModel.Selected += (s, a) =>
-            {
-                var ofd = new FileDialog(FileDialogMode.OpenFile);
-                ofd.ShowModal();
-                ofd.FilePath = "d:\\develop\\NET\\Monogame\\Models\\";
-                ofd.Closed += (s1, a1) =>
-                {
-                    if (ofd.FilePath != "" && ofd.Result)
-                    {
-                        String result = game.bModel.Load(ofd.FilePath);
-
-                        if (result == "")
-                        {
-                            game.camera.rotationh = 0f;
-                            game.camera.rotationv = 0f;
-                            game.camera.distance = game.bModel.bb.Max.Length() * 3;
-                            game.axis.size = game.bModel.bb.Max.Length();
-                            game.boundary.bb = game.bModel.bb;
-                            if (game.bModel.tex != null)
-                                game.textureCrate = game.bModel.tex;
-
-                            game.octree = new Octree(game, game.octreeDepth, game.octantTextureCoordinates, game.optimizeOctantFaces);
-
-                            new Thread(() =>
-                            {
-                                Thread.CurrentThread.IsBackground = true;
-                                game.octree.startTime = DateTime.Now;
-                                game.octree.Build(game.bModel);
-                                game.octree.BuildTextureCoordinates();
-                                if (game.fillObject)
-                                {
-                                    game.octree.Fill();
-                                }
-                                if (game.optimizeOctree)
-                                {
-                                    game.octree.Optimize();
-                                }
-                                game.octree.BuildMesh();
-                                game.octree.endTime = DateTime.Now;
-                            }).Start();
-                        }
-                        else
-                        {
-                            Dialog dialog = new Dialog
-                            {
-                                Title = "Error"
-                            };
-
-                            var stackPanel = new HorizontalStackPanel
-                            {
-                                Spacing = 8
-                            };
-                            stackPanel.Proportions.Add(new Proportion
-                            {
-                                Type = ProportionType.Auto,
-                            });
-                            stackPanel.Proportions.Add(new Proportion
-                            {
-                                Type = ProportionType.Fill,
-                            });
-
-                            var label1 = new Label
-                            {
-                                Text = result
-                            };
-                            stackPanel.Widgets.Add(label1);
-
-                            dialog.Content = stackPanel;
-                            dialog.ButtonCancel.Visible = false;
-                            dialog.ShowModal();
-                        }
-
-                    }
-                };
-            };
-            _menuFile.Items.Add(_mnuOpenModel);
+            _menuFile.Items.Add(CreateBuildFromModel());
 
             var _mnuOpenOctree = new MenuItem();
             _mnuOpenOctree.Id = "_menuOpenOctree";
@@ -208,7 +130,7 @@ namespace OctGL
                         game.octree.SaveOctree(ofd.FilePath);
                     }
                 };
-                
+
             };
             _menuFile.Items.Add(_mnuSaveOctree);
 
@@ -216,8 +138,7 @@ namespace OctGL
             _menuOptions.Id = "_menuOptions";
             _menuOptions.Text = "Options";
 
-            _menuOptions.Items.Add(BuildOctreeOptions());
-            _menuOptions.Items.Add(BuildAxisOptions());
+            _menuOptions.Items.Add(CreateAxisOptions());
 
             var _menuView = new MenuItem();
             _menuView.Id = "_menuView";
@@ -295,7 +216,7 @@ namespace OctGL
             };
             _menuView.Items.Add(_menuBoundary);
 
-            _menuView.Items.Add(BuildModelInfo());
+            _menuView.Items.Add(CreateModelInfo());
 
             var _menuProjection = new MenuItem();
             _menuProjection.Id = "_menuRenderMode";
@@ -368,15 +289,15 @@ namespace OctGL
             Desktop.Widgets.Add(horizontalBox);
         }
 
-        public MenuItem BuildOctreeOptions()
+        public MenuItem CreateBuildFromModel()
         {
-            var _mnuAxisOptions = new MenuItem();
-            _mnuAxisOptions.Id = "_mnuOctreeOptions";
-            _mnuAxisOptions.Text = "Octree options...";
-            _mnuAxisOptions.Selected += (s, a) =>
+            var _mnuBuildFromModel = new MenuItem();
+            _mnuBuildFromModel.Id = "_mnuBuildFromModel";
+            _mnuBuildFromModel.Text = "Build from model...";
+            _mnuBuildFromModel.Selected += (s, a) =>
             {
                 var _window = new Window();
-                _window.Title = "Octree options";
+                _window.Title = "Build from model";
                 _window.Width = 550;
 
                 var grid = new Grid
@@ -411,13 +332,15 @@ namespace OctGL
                 grid.RowsProportions.Add(new Proportion());
                 grid.RowsProportions.Add(new Proportion());
                 grid.RowsProportions.Add(new Proportion());
+                grid.RowsProportions.Add(new Proportion());
+                grid.RowsProportions.Add(new Proportion());
 
                 // Add widgets
-                var textSize = new Label();
-                textSize.Text = "Depth";
-                textSize.GridRow = 0;
-                textSize.GridColumn = 0;
-                grid.Widgets.Add(textSize);
+                var lblSize = new Label();
+                lblSize.Text = "Depth";
+                lblSize.GridRow = 0;
+                lblSize.GridColumn = 0;
+                grid.Widgets.Add(lblSize);
 
                 var depth = new SpinButton();
                 depth.HorizontalAlignment = HorizontalAlignment.Stretch;
@@ -427,6 +350,7 @@ namespace OctGL
                 depth.Increment = 1;
                 depth.GridRow = 0;
                 depth.GridColumn = 1;
+                depth.Width = 50;
                 depth.Value = game.octreeDepth;
                 depth.ValueChanged += (s1, a1) =>
                 {
@@ -434,11 +358,11 @@ namespace OctGL
                 };
                 grid.Widgets.Add(depth);
 
-                var textOctantTextureCoordinates = new Label();
-                textOctantTextureCoordinates.Text = "Octant texture coordinates";
-                textOctantTextureCoordinates.GridRow = 1;
-                textOctantTextureCoordinates.GridColumn = 0;
-                grid.Widgets.Add(textOctantTextureCoordinates);
+                var lblOctantTextureCoordinates = new Label();
+                lblOctantTextureCoordinates.Text = "Octant texture coordinates";
+                lblOctantTextureCoordinates.GridRow = 1;
+                lblOctantTextureCoordinates.GridColumn = 0;
+                grid.Widgets.Add(lblOctantTextureCoordinates);
 
                 var comboTextureCoodinates = new ComboBox
                 {
@@ -449,7 +373,7 @@ namespace OctGL
                 comboTextureCoodinates.Items.Add(new ListItem("0"));
                 comboTextureCoodinates.Items.Add(new ListItem("1"));
                 comboTextureCoodinates.Items.Add(new ListItem("8"));
-                for (int i=0;i<comboTextureCoodinates.Items.Count-1;i++)
+                for (int i = 0; i < comboTextureCoodinates.Items.Count - 1; i++)
                 {
                     if (comboTextureCoodinates.Items[i].Text == game.octantTextureCoordinates.ToString())
                     {
@@ -460,13 +384,14 @@ namespace OctGL
                 {
                     game.octantTextureCoordinates = short.Parse(comboTextureCoodinates.SelectedItem.Text);
                 };
+                comboTextureCoodinates.Width = 50;
                 grid.Widgets.Add(comboTextureCoodinates);
 
-                var textFillObject = new Label();
-                textFillObject.Text = "Fill object";
-                textFillObject.GridRow = 3;
-                textFillObject.GridColumn = 0;
-                grid.Widgets.Add(textFillObject);
+                var lblFillObject = new Label();
+                lblFillObject.Text = "Fill object";
+                lblFillObject.GridRow = 3;
+                lblFillObject.GridColumn = 0;
+                grid.Widgets.Add(lblFillObject);
 
                 var chkFillObject = new CheckBox();
                 chkFillObject.GridRow = 3;
@@ -478,11 +403,11 @@ namespace OctGL
                 };
                 grid.Widgets.Add(chkFillObject);
 
-                var textOptimizeOctree = new Label();
-                textOptimizeOctree.Text = "Optimize octree";
-                textOptimizeOctree.GridRow = 4;
-                textOptimizeOctree.GridColumn = 0;
-                grid.Widgets.Add(textOptimizeOctree);
+                var lblOptimizeOctree = new Label();
+                lblOptimizeOctree.Text = "Optimize octree";
+                lblOptimizeOctree.GridRow = 4;
+                lblOptimizeOctree.GridColumn = 0;
+                grid.Widgets.Add(lblOptimizeOctree);
 
                 var chkOptimizeOctree = new CheckBox();
                 chkOptimizeOctree.GridRow = 4;
@@ -494,11 +419,11 @@ namespace OctGL
                 };
                 grid.Widgets.Add(chkOptimizeOctree);
 
-                var textOptimizeOctantFaces = new Label();
-                textOptimizeOctantFaces.Text = "Optimize octant faces";
-                textOptimizeOctantFaces.GridRow = 5;
-                textOptimizeOctantFaces.GridColumn = 0;
-                grid.Widgets.Add(textOptimizeOctantFaces);
+                var lblOptimizeOctantFaces = new Label();
+                lblOptimizeOctantFaces.Text = "Optimize octant faces";
+                lblOptimizeOctantFaces.GridRow = 5;
+                lblOptimizeOctantFaces.GridColumn = 0;
+                grid.Widgets.Add(lblOptimizeOctantFaces);
 
                 var chkOptimizeOctantFaces = new CheckBox();
                 chkOptimizeOctantFaces.GridRow = 5;
@@ -510,18 +435,90 @@ namespace OctGL
                 };
                 grid.Widgets.Add(chkOptimizeOctantFaces);
 
+                var lblFile = new Label();
+                lblFile.Text = "File";
+                lblFile.GridRow = 6;
+                lblFile.GridColumn = 0;
+                grid.Widgets.Add(lblFile);
+
+                var textFile = new TextBox();
+                textFile.Text = "";
+                textFile.GridRow = 6;
+                textFile.GridColumn = 1;
+                textFile.Width = 300;
+                grid.Widgets.Add(textFile);
+
+                var bttFile = new TextButton();
+                bttFile.GridRow = 6;
+                bttFile.GridColumn = 2;
+                bttFile.Text = "...";
+                bttFile.Click += (s1, a1) =>
+                {
+                    var ofd = new FileDialog(FileDialogMode.OpenFile);
+                    ofd.ShowModal();
+                    ofd.FilePath = "d:\\develop\\NET\\Monogame\\Models\\";
+                    ofd.Closed += (s2, a2) =>
+                    {
+                        if (ofd.FilePath != "" && ofd.Result)
+                        {
+                            textFile.Text = ofd.FilePath;
+                        }
+                    };
+                };
+                grid.Widgets.Add(bttFile);
+
+                var bttBuild = new TextButton();
+                bttBuild.GridRow = 7;
+                bttBuild.GridColumn = 1;
+                bttBuild.Text = "Build";
+                bttBuild.Width = 100;
+                bttBuild.Click += (s1, a1) =>
+                {
+                    _window.Close();
+
+                    String result = game.bModel.Load(textFile.Text);
+
+                    if (result == "")
+                    {
+                        game.camera.rotationh = 0f;
+                        game.camera.rotationv = 0f;
+                        game.camera.distance = game.bModel.bb.Max.Length() * 3;
+                        game.axis.size = game.bModel.bb.Max.Length();
+                        game.boundary.bb = game.bModel.bb;
+                        if (game.bModel.tex != null)
+                            game.textureCrate = game.bModel.tex;
+
+                        game.octree = new Octree(game, game.octreeDepth, game.octantTextureCoordinates, game.optimizeOctantFaces);
+
+                        new Thread(() =>
+                        {
+                            Thread.CurrentThread.IsBackground = true;
+                            game.octree.startTime = DateTime.Now;
+                            game.octree.Build(game.bModel);
+                            game.octree.BuildTextureCoordinates();
+                            if (game.fillObject)
+                            {
+                                game.octree.Fill();
+                            }
+                            if (game.optimizeOctree)
+                            {
+                                game.octree.Optimize();
+                            }
+                            game.octree.BuildMesh();
+                            game.octree.endTime = DateTime.Now;
+                        }).Start();
+                    };
+                };
+
+                grid.Widgets.Add(bttBuild);
+
                 _window.ShowModal();
             };
 
-            return _mnuAxisOptions;
+            return _mnuBuildFromModel;
         }
 
-        public void syncOctantTextureCoordinates()
-        {
-
-        }
-
-        public MenuItem BuildModelInfo()
+        public MenuItem CreateModelInfo()
         {
             var _mnuAxisOptions = new MenuItem();
             _mnuAxisOptions.Id = "_mnuModelInfo";
@@ -549,25 +546,32 @@ namespace OctGL
                 grid.RowsProportions.Add(new Proportion());
                 grid.RowsProportions.Add(new Proportion());
                 grid.RowsProportions.Add(new Proportion());
+                grid.RowsProportions.Add(new Proportion());
 
                 // Add widgets
-                var textVertices = new Label();
-                textVertices.Text = string.Format("Vertices: {0}", game.bModel.totalVertices());
-                textVertices.GridRow = 0;
-                textVertices.GridColumn = 0;
-                grid.Widgets.Add(textVertices);
+                var lblOctantsFilled = new Label();
+                lblOctantsFilled.Text = string.Format("Octants filled: {0}", game.octree.octantsFilled);
+                lblOctantsFilled.GridRow = 0;
+                lblOctantsFilled.GridColumn = 0;
+                grid.Widgets.Add(lblOctantsFilled);
 
-                var textFaces = new Label();
-                textFaces.Text = string.Format("Faces: {0}", game.bModel.totalFaces());
-                textFaces.GridRow = 1;
-                textFaces.GridColumn = 0;
-                grid.Widgets.Add(textFaces);
+                var lblVertices = new Label();
+                lblVertices.Text = string.Format("Vertices: {0}", game.bModel.totalVertices());
+                lblVertices.GridRow = 1;
+                lblVertices.GridColumn = 0;
+                grid.Widgets.Add(lblVertices);
 
-                var textSize = new Label();
-                textSize.Text = string.Format("Size: <{0},{1},{2}>", (game.bModel.bb.Max.X-game.bModel.bb.Min.X).ToString("00.00").Replace(",","."), (game.bModel.bb.Max.Y - game.bModel.bb.Min.Y).ToString("00.00").Replace(",", "."), (game.bModel.bb.Max.Z - game.bModel.bb.Min.Z).ToString("00.00").Replace(",", "."));
-                textSize.GridRow = 2;
-                textSize.GridColumn = 0;
-                grid.Widgets.Add(textSize);
+                var lblFaces = new Label();
+                lblFaces.Text = string.Format("Faces: {0}", game.bModel.totalFaces());
+                lblFaces.GridRow = 2;
+                lblFaces.GridColumn = 0;
+                grid.Widgets.Add(lblFaces);
+
+                var lblSize = new Label();
+                lblSize.Text = string.Format("Size: <{0},{1},{2}>", (game.bModel.bb.Max.X - game.bModel.bb.Min.X).ToString("00.00").Replace(",", "."), (game.bModel.bb.Max.Y - game.bModel.bb.Min.Y).ToString("00.00").Replace(",", "."), (game.bModel.bb.Max.Z - game.bModel.bb.Min.Z).ToString("00.00").Replace(",", "."));
+                lblSize.GridRow = 3;
+                lblSize.GridColumn = 0;
+                grid.Widgets.Add(lblSize);
 
                 _window.ShowModal();
             };
@@ -575,7 +579,7 @@ namespace OctGL
             return _mnuAxisOptions;
         }
 
-        public MenuItem BuildAxisOptions()
+        public MenuItem CreateAxisOptions()
         {
             var _mnuAxisOptions = new MenuItem();
             _mnuAxisOptions.Id = "_mnuAxisOptions";
