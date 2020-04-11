@@ -51,6 +51,7 @@ namespace OctGL
 
         public double octants;
         public double octantsMax;
+        public double octantsFilled;
 
         public double textureCoordinates;
         public double textureCoordinatesMax;
@@ -66,7 +67,8 @@ namespace OctGL
 
         private AABBTriangleIntersection aabbint;
 
-        public Octree(Game game){
+        public Octree(Game game)
+        {
 
             this.game = game;
             root = this;
@@ -109,11 +111,12 @@ namespace OctGL
                         break;
                     case '1':
                         current.state = OctreeStates.Full;
+                        octantsFilled++;
                         break;
                     case '(':
                         current.state = OctreeStates.Mixted;
                         current.CreateChilds(current.bb);
-                        for (int j =0; j < 8; j++)
+                        for (int j = 0; j < 8; j++)
                         {
                             st.Push(current.childs[j]);
                         }
@@ -169,6 +172,7 @@ namespace OctGL
             Octree current = this;
             int emptyChilds;
             int fullChilds;
+            octantsFilled = 0;
 
             st.Push(current);
             while (st.Count > 0)
@@ -185,7 +189,8 @@ namespace OctGL
                         if (current.childs[i].state == OctreeStates.Empty)
                         {
                             emptyChilds++;
-                        }else if (current.childs[i].state == OctreeStates.Full)
+                        }
+                        else if (current.childs[i].state == OctreeStates.Full)
                         {
                             fullChilds++;
                         }
@@ -218,6 +223,8 @@ namespace OctGL
                         {
                             current.childs[j] = null;
                         }
+
+                        octantsFilled++;
                     }
                     else if (emptyChilds == 8)
                     {
@@ -235,6 +242,10 @@ namespace OctGL
                             st.Push(current.childs[j]);
                         }
                     }
+                }
+                else if (current.state == OctreeStates.Full)
+                {
+                    octantsFilled++;
                 }
             }
         }
@@ -290,7 +301,7 @@ namespace OctGL
             while (st.Count > 0)
             {
                 current = st.Pop();
-                
+
                 if (current.state == OctreeStates.Full)
                 {
                     textureCoordinates += 8;
@@ -310,7 +321,7 @@ namespace OctGL
                             current.textureCoord[i].Y = textCoordInt.Y;
                         }
                     }
-                    else if(root.octantTextureCoordinates == 8)
+                    else if (root.octantTextureCoordinates == 8)
                     {
                         Vector2 textCoordInt = CalculateTextureCoordinates(current.bb.Min.X, current.bb.Min.Y, current.bb.Min.Z, current);
                         current.textureCoord[NodePositions.xyz].X = textCoordInt.X;
@@ -368,7 +379,7 @@ namespace OctGL
             while (st.Count > 0)
             {
                 current = st.Pop();
-                
+
                 if (current.state == OctreeStates.Full)
                 {
                     cube = new Cube(current.bb, current.textureCoord);
@@ -387,12 +398,12 @@ namespace OctGL
                         Task.WaitAll(tasks);
                     }
 
-                    cube.AddVertices(lstVertices, 
+                    cube.AddVertices(lstVertices,
                         (nZplus == null || nZplus.state != OctreeStates.Full),
                         (nZminus == null || nZminus.state != OctreeStates.Full),
                         (nYplus == null || nYplus.state != OctreeStates.Full),
-                        (nYminus == null || nYminus.state != OctreeStates.Full), 
-                        (nXplus == null || nXplus.state != OctreeStates.Full), 
+                        (nYminus == null || nYminus.state != OctreeStates.Full),
+                        (nXplus == null || nXplus.state != OctreeStates.Full),
                         (nXminus == null || nXminus.state != OctreeStates.Full));
 
                     verticesNumber = lstVertices.Count;
@@ -434,7 +445,7 @@ namespace OctGL
             float[] coordBBMax = aabbint.Coords(bb.Max);
             Vector3[] bbCorners = bb.GetCorners();
 
-            for (int r=0;r< bModel.oScene.MeshCount;r++)
+            for (int r = 0; r < bModel.oScene.MeshCount; r++)
             {
                 Mesh m = bModel.oScene.Meshes[r];
                 for (int k = 0; k < m.FaceCount; k++)
@@ -490,6 +501,7 @@ namespace OctGL
                     else
                     {
                         root.octants++;
+                        root.octantsFilled++;
                     }
                 }
                 else
@@ -680,7 +692,7 @@ namespace OctGL
             {
                 return null;
             }
-            
+
             BModel bmodelCutted = new BModel(bModel.device);
             float[] coordBBMin = aabbint.Coords(bb.Min);
             float[] coordBBMax = aabbint.Coords(bb.Max);
@@ -757,11 +769,12 @@ namespace OctGL
                     {
                         tmp.state = OctreeStates.Mixted;
                         tmp.CreateChilds(tmp.bb);
-                        for (int i=0; i< 8; i++)
+                        for (int i = 0; i < 8; i++)
                         {
                             tmp.childs[i].state = OctreeStates.Empty;
                         }
-                    }else if (tmp.state == OctreeStates.Full)
+                    }
+                    else if (tmp.state == OctreeStates.Full)
                     {
                         tmp.state = OctreeStates.Mixted;
                         tmp.CreateChilds(tmp.bb);
@@ -799,7 +812,8 @@ namespace OctGL
                     else if (position == 4) return tmp.childs[NodePositions.XyZ];
                     else if (position == 6) return tmp.childs[NodePositions.XYZ];
                     else return null;
-                }else return tmp; 
+                }
+                else return tmp;
             }
         }
 
