@@ -95,6 +95,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Octree.ico" />
+    <Content Include="Resources\demo.gif" />
     <Content Include="SampleModels\Dragon\dragon.bmp" />
     <Content Include="SampleModels\Dragon\DRAGON.JPG" />
   </ItemGroup>
