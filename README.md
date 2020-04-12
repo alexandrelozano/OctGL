@@ -7,3 +7,5 @@ UI created with [Myra](https://github.com/rds1983/Myra)
 Load 3D file models with [AssimpNET](https://github.com/assimp/assimp-net)
 
 ![Demo](https://raw.githubusercontent.com/alexandrelozano/OctGL/master/OctGL/Resources/demo.gif)
+
+![Samples with diferent levels of depth](https://raw.githubusercontent.com/alexandrelozano/OctGL/master/OctGL/Resources/samplelevels.jpg)
