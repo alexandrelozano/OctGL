@@ -96,8 +96,12 @@
     </Content>
     <Content Include="Octree.ico" />
     <Content Include="Resources\demo.gif" />
-    <Content Include="SampleModels\Dragon\dragon.bmp" />
-    <Content Include="SampleModels\Dragon\DRAGON.JPG" />
+    <Content Include="SampleModels\Dragon\dragon.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleModels\Dragon\DRAGON.JPG">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <MonoGameContentReference Include="Content\Content.mgcb" />
@@ -108,9 +112,15 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="SampleModels\Dragon\dragon.FBX" />
-    <None Include="SampleModels\Dragon\dragon.mtl" />
-    <None Include="SampleModels\Dragon\dragon.OBJ" />
+    <None Include="SampleModels\Dragon\dragon.FBX">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="SampleModels\Dragon\dragon.mtl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="SampleModels\Dragon\dragon.OBJ">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

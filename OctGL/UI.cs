@@ -4,6 +4,7 @@ using Myra.Graphics2D.TextureAtlases;
 using Myra.Graphics2D.UI;
 using Myra.Graphics2D.UI.File;
 using System;
+using System.IO;
 using System.Threading;
 
 namespace OctGL
@@ -90,7 +91,7 @@ namespace OctGL
             _mnuOpenOctree.Selected += (s, a) =>
             {
                 var ofd = new FileDialog(FileDialogMode.OpenFile);
-                ofd.Folder = "d:\\develop\\NET\\Monogame\\Models\\";
+                ofd.Folder = Directory.GetCurrentDirectory() + "\\SampleModels\\";
                 ofd.Filter = "*.oct";
                 ofd.ShowModal();
                 ofd.Closed += (s1, a1) =>
@@ -118,7 +119,7 @@ namespace OctGL
             _mnuSaveOctree.Selected += (s, a) =>
             {
                 var ofd = new FileDialog(FileDialogMode.SaveFile);
-                ofd.FilePath = "d:\\develop\\NET\\Monogame\\Models\\";
+                ofd.FilePath = Directory.GetCurrentDirectory() + "\\SampleModels\\";
                 ofd.Filter = "*.oct";
                 ofd.AutoAddFilterExtension = true;
                 ofd.ShowModal();
@@ -456,7 +457,7 @@ namespace OctGL
                 {
                     var ofd = new FileDialog(FileDialogMode.OpenFile);
                     ofd.ShowModal();
-                    ofd.FilePath = "d:\\develop\\NET\\Monogame\\Models\\";
+                    ofd.FilePath = Directory.GetCurrentDirectory() + "\\SampleModels\\";
                     ofd.Closed += (s2, a2) =>
                     {
                         if (ofd.FilePath != "" && ofd.Result)
