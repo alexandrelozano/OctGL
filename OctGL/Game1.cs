@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System.Reflection;
 
 namespace OctGL
 {
@@ -118,6 +119,9 @@ namespace OctGL
             basicEffect.LightingEnabled = true;
 
             bModel = new BModel(GraphicsDevice);
+
+            string version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            this.Window.Title = "OctGL v" + version;
 
         }
 
