@@ -145,139 +145,191 @@ namespace OctGL
             _menuView.Id = "_menuView";
             _menuView.Text = "View";
 
-            var _mnuShowModel = new MenuItem();
-            _mnuShowModel.Id = "_mnuShowModel";
-            _mnuShowModel.Text = "Hide model";
-            _mnuShowModel.Selected += (s, a) =>
-            {
-                if (_mnuShowModel.Text == "Show model")
-                {
-                    _mnuShowModel.Text = "Hide model";
-                    game.showModel = true;
-                }
-                else
-                {
-                    _mnuShowModel.Text = "Show model";
-                    game.showModel = false;
-                }
-            };
-            _menuView.Items.Add(_mnuShowModel);
-
-            var _mnuShowOctree = new MenuItem();
-            _mnuShowOctree.Id = "_mnuShowOctree";
-            _mnuShowOctree.Text = "Hide octree";
-            _mnuShowOctree.Selected += (s, a) =>
-            {
-                if (_mnuShowOctree.Text == "Show octree")
-                {
-                    _mnuShowOctree.Text = "Hide octree";
-                    game.showOctree = true;
-                }
-                else
-                {
-                    _mnuShowOctree.Text = "Show octree";
-                    game.showOctree = false;
-                }
-            };
-            _menuView.Items.Add(_mnuShowOctree);
-
-            var _mnuAxis = new MenuItem();
-            _mnuAxis.Id = "_menuAxis";
-            _mnuAxis.Text = "Hide axis";
-            _mnuAxis.Selected += (s, a) =>
-            {
-                if (_mnuAxis.Text == "Show axis")
-                {
-                    _mnuAxis.Text = "Hide axis";
-                    game.showAxis = true;
-                }
-                else
-                {
-                    _mnuAxis.Text = "Show axis";
-                    game.showAxis = false;
-                }
-            };
-            _menuView.Items.Add(_mnuAxis);
-
-            var _menuBoundary = new MenuItem();
-            _menuBoundary.Id = "_menuBoundary";
-            _menuBoundary.Text = "Hide boundary";
-            _menuBoundary.Selected += (s, a) =>
-            {
-                if (_menuBoundary.Text == "Show boundary")
-                {
-                    _menuBoundary.Text = "Hide boundary";
-                    game.showBoundary = true;
-                }
-                else
-                {
-                    _menuBoundary.Text = "Show boundary";
-                    game.showBoundary = false;
-                }
-            };
-            _menuView.Items.Add(_menuBoundary);
-
             _menuView.Items.Add(CreateModelInfo());
 
-            var _menuProjection = new MenuItem();
-            _menuProjection.Id = "_menuRenderMode";
-            _menuProjection.Text = "Ortographic";
-            _menuProjection.Selected += (s, a) =>
-            {
-                if (_menuProjection.Text == "Ortographic")
-                {
-                    _menuProjection.Text = "Perspective";
-                    game.projection = "O";
-                }
-                else
-                {
-                    _menuProjection.Text = "Ortographic";
-                    game.projection = "P";
-                }
-            };
-            _menuView.Items.Add(_menuProjection);
+            var _menuSep1 = new MenuSeparator();
+            _menuView.Items.Add(_menuSep1);
 
-            var _menuFullScreen = new MenuItem();
-            _menuFullScreen.Id = "_menuFullScreen";
-            _menuFullScreen.Text = "Fullscreen On";
-            _menuFullScreen.Selected += (s, a) =>
-            {
-                if (_menuFullScreen.Text == "Fullscreen On")
-                {
-                    _menuFullScreen.Text = "Fullscreen Off";
-                    game._graphics.PreferredBackBufferWidth = game.GraphicsDevice.DisplayMode.Width;
-                    game._graphics.PreferredBackBufferHeight = game.GraphicsDevice.DisplayMode.Height;
-                    game._graphics.IsFullScreen = true;
-                    game._graphics.ApplyChanges();
-                }
-                else
-                {
-                    _menuFullScreen.Text = "Fullscreen On";
-                    game._graphics.PreferredBackBufferWidth = game.originalWidth;
-                    game._graphics.PreferredBackBufferHeight = game.originalHeight;
-                    game._graphics.IsFullScreen = false;
-                    game._graphics.ApplyChanges();
-                }
-            };
-            _menuView.Items.Add(_menuFullScreen);
+            var _mnuModelHide = new MenuItem();
+            var _mnuModelShow = new MenuItem();
 
-            var _mnuStatusBar = new MenuItem();
-            _mnuStatusBar.Id = "_menuStatusBar";
-            _mnuStatusBar.Text = "Hide status bar";
-            _mnuStatusBar.Selected += (s, a) =>
+            _mnuModelHide.Id = "_mnuModelHide";
+            _mnuModelHide.Text = "Hide model";
+            _mnuModelHide.Selected += (s, a) =>
             {
-                if (_mnuStatusBar.Text == "Show status bar")
-                {
-                    _mnuStatusBar.Text = "Hide status bar";
-                    horizontalBox.Visible = true;
-                }
-                else
-                {
-                    _mnuStatusBar.Text = "Show status bar";
-                    horizontalBox.Visible = false;
-                }
+                int pos = _menuView.Items.IndexOf(_mnuModelHide);
+                _menuView.Items.Remove(_mnuModelHide);
+                _menuView.Items.Insert(pos, _mnuModelShow);
+                game.showModel = false;
             };
-            _menuView.Items.Add(_mnuStatusBar);
+            _menuView.Items.Add(_mnuModelHide);
+
+            _mnuModelShow.Id = "_mnuModelShow";
+            _mnuModelShow.Text = "Show model";
+            _mnuModelShow.Selected += (s, a) =>
+            {
+                int pos = _mnuModelShow.Menu.Items.IndexOf(_mnuModelShow);
+                _menuView.Items.Remove(_mnuModelShow);
+                _menuView.Items.Insert(pos, _mnuModelHide);
+                game.showModel = true;
+            };
+
+            var _mnuOctreeHide = new MenuItem();
+            var _mnuOctreeShow = new MenuItem();
+
+            _mnuOctreeHide.Id = "_mnuOctreeHide";
+            _mnuOctreeHide.Text = "Hide octree";
+            _mnuOctreeHide.Selected += (s, a) =>
+            {
+                int pos = _menuView.Items.IndexOf(_mnuOctreeHide);
+                _menuView.Items.Remove(_mnuOctreeHide);
+                _menuView.Items.Insert(pos, _mnuOctreeShow);
+                game.showOctree = false;
+            };
+            _menuView.Items.Add(_mnuOctreeHide);
+
+            _mnuOctreeShow.Id = "_mnuOctreeShow";
+            _mnuOctreeShow.Text = "Show octree";
+            _mnuOctreeShow.Selected += (s, a) =>
+            {
+                int pos = _menuView.Items.IndexOf(_mnuOctreeShow);
+                _menuView.Items.Remove(_mnuOctreeShow);
+                _menuView.Items.Insert(pos, _mnuOctreeHide);
+                game.showOctree = true;
+            };
+
+            var _mnuAxisHide = new MenuItem();
+            var _mnuAxisShow = new MenuItem();
+
+            _mnuAxisHide.Id = "_mnuAxisHide";
+            _mnuAxisHide.Text = "Hide axis";
+            _mnuAxisHide.Selected += (s, a) =>
+            {
+                int pos = _menuView.Items.IndexOf(_mnuAxisHide);
+                _menuView.Items.Remove(_mnuAxisHide);
+                _menuView.Items.Insert(pos, _mnuAxisShow);
+                game.showAxis = false;
+            };
+            _menuView.Items.Add(_mnuAxisHide);
+
+            _mnuAxisShow.Id = "_mnuAxisShow";
+            _mnuAxisShow.Text = "Show axis";
+            _mnuAxisShow.Selected += (s, a) =>
+            {
+                int pos = _menuView.Items.IndexOf(_mnuAxisShow);
+                _menuView.Items.Remove(_mnuAxisShow);
+                _menuView.Items.Insert(pos, _mnuAxisHide);
+                game.showAxis = true;
+            };
+
+            var _mnuBoundaryHide = new MenuItem();
+            var _mnuBoundaryShow = new MenuItem();
+
+            _mnuBoundaryHide.Id = "_menuBoundaryHide";
+            _mnuBoundaryHide.Text = "Hide boundary";
+            _mnuBoundaryHide.Selected += (s, a) =>
+            {
+                int pos = _menuView.Items.IndexOf(_mnuBoundaryHide);
+                _menuView.Items.Remove(_mnuBoundaryHide);
+                _menuView.Items.Insert(pos, _mnuBoundaryShow);
+                game.showBoundary = false;
+            };
+            _menuView.Items.Add(_mnuBoundaryHide);
+
+            _mnuBoundaryShow.Id = "_menuBoundaryShow";
+            _mnuBoundaryShow.Text = "Show boundary";
+            _mnuBoundaryShow.Selected += (s, a) =>
+            {
+                int pos = _menuView.Items.IndexOf(_mnuBoundaryShow);
+                _menuView.Items.Remove(_mnuBoundaryShow);
+                _menuView.Items.Insert(pos, _mnuBoundaryHide);
+                game.showBoundary = true;
+            };
+
+
+            var _menuSep2 = new MenuSeparator();
+            _menuView.Items.Add(_menuSep2);
+
+            var _mnuOrthographic = new MenuItem();
+            var _mnuPerspective = new MenuItem();
+
+            _mnuOrthographic.Id = "_mnuOrthographic";
+            _mnuOrthographic.Text = "Orthographic";
+            _mnuOrthographic.Selected += (s, a) =>
+            {
+                int pos = _menuView.Items.IndexOf(_mnuOrthographic);
+                _menuView.Items.Remove(_mnuOrthographic);
+                _menuView.Items.Insert(pos, _mnuPerspective);
+                game.projection = "O";
+            };
+            _menuView.Items.Add(_mnuOrthographic);
+
+            _mnuPerspective.Id = "_menuBoundaryShow";
+            _mnuPerspective.Text = "Perspective";
+            _mnuPerspective.Selected += (s, a) =>
+            {
+                int pos = _menuView.Items.IndexOf(_mnuPerspective);
+                _menuView.Items.Remove(_mnuPerspective);
+                _menuView.Items.Insert(pos, _mnuOrthographic);
+                game.projection = "P";
+            };
+
+            var _menuSep3 = new MenuSeparator();
+            _menuView.Items.Add(_menuSep3);
+
+            var _menuFullScreenOn = new MenuItem();
+            var _menuFullScreenOff = new MenuItem();
+
+            _menuFullScreenOn.Id = "_menuFullScreenOn";
+            _menuFullScreenOn.Text = "Fullscreen on";
+            _menuFullScreenOn.Selected += (s, a) =>
+            {
+                int pos = _menuView.Items.IndexOf(_menuFullScreenOn);
+                _menuView.Items.Remove(_menuFullScreenOn);
+                _menuView.Items.Insert(pos, _menuFullScreenOff);
+                game._graphics.PreferredBackBufferWidth = game.GraphicsDevice.DisplayMode.Width;
+                game._graphics.PreferredBackBufferHeight = game.GraphicsDevice.DisplayMode.Height;
+                game._graphics.IsFullScreen = true;
+                game._graphics.ApplyChanges();
+            };
+            _menuView.Items.Add(_menuFullScreenOn);
+
+            _menuFullScreenOff.Id = "_menuFullScreenOff";
+            _menuFullScreenOff.Text = "Fullscreen off";
+            _menuFullScreenOff.Selected += (s, a) =>
+            {
+                int pos = _menuView.Items.IndexOf(_menuFullScreenOff);
+                _menuView.Items.Remove(_menuFullScreenOff);
+                _menuView.Items.Insert(pos, _menuFullScreenOn);
+                game._graphics.PreferredBackBufferWidth = game.originalWidth;
+                game._graphics.PreferredBackBufferHeight = game.originalHeight;
+                game._graphics.IsFullScreen = false;
+                game._graphics.ApplyChanges();
+            };
+
+            var _mnuStatusBarHide = new MenuItem();
+            var _mnuStatusBarShow = new MenuItem();
+
+            _mnuStatusBarHide.Id = "_mnuStatusBarHide";
+            _mnuStatusBarHide.Text = "Hide status bar";
+            _mnuStatusBarHide.Selected += (s, a) =>
+            {
+                int pos = _menuView.Items.IndexOf(_mnuStatusBarHide);
+                _menuView.Items.Remove(_mnuStatusBarHide);
+                _menuView.Items.Insert(pos, _mnuStatusBarShow);
+                horizontalBox.Visible = false;
+            };
+            _menuView.Items.Add(_mnuStatusBarHide);
+
+            _mnuStatusBarShow.Id = "_mnuStatusBarShow";
+            _mnuStatusBarShow.Text = "Show status bar";
+            _mnuStatusBarShow.Selected += (s, a) =>
+            {
+                int pos = _menuView.Items.IndexOf(_mnuStatusBarShow);
+                _menuView.Items.Remove(_mnuStatusBarShow);
+                _menuView.Items.Insert(pos, _mnuStatusBarHide);
+                horizontalBox.Visible = true;
+            };
 
             var verticalMenu1 = new HorizontalMenu();
             verticalMenu1.HorizontalAlignment = Myra.Graphics2D.UI.HorizontalAlignment.Stretch;
@@ -288,6 +340,7 @@ namespace OctGL
 
             Desktop.Widgets.Add(verticalMenu1);
             Desktop.Widgets.Add(horizontalBox);
+            
         }
 
         public MenuItem CreateBuildFromModel()
