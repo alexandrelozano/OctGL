@@ -45,8 +45,6 @@ namespace OctGL
                     PostProcessSteps.FindInstances |
                     PostProcessSteps.FindInvalidData |
                     PostProcessSteps.FlipUVs |
-                    PostProcessSteps.FlipWindingOrder |
-                    PostProcessSteps.MakeLeftHanded |
                     PostProcessSteps.JoinIdenticalVertices |
                     PostProcessSteps.ImproveCacheLocality |
                     PostProcessSteps.OptimizeMeshes |
