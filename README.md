@@ -8,5 +8,3 @@ Load 3D file models with [AssimpNET](https://github.com/assimp/assimp-net)
 Sample dragon model from [TurboSquid](https://www.turbosquid.com/es/FullPreview/Index.cfm/ID/1129559)  
 
 ![Demo](https://raw.githubusercontent.com/alexandrelozano/OctGL/master/OctGL/Resources/demo.gif)
-
-![Samples with diferent levels of depth](https://raw.githubusercontent.com/alexandrelozano/OctGL/master/OctGL/Resources/samplelevels.jpg)
