@@ -59,7 +59,7 @@ namespace OctGL
                     Vector3 axis = Vector3.Cross(triangleEdges[i],boxNormals[j]);
                     Project(bbCorners, axis, out boxMin, out boxMax);
                     Project(tri, axis, out triangleMin, out triangleMax);
-                    if (boxMax <= triangleMin || boxMin >= triangleMax)
+                    if (boxMax < triangleMin || boxMin > triangleMax)
                         return false; // No intersection possible
                 }
 

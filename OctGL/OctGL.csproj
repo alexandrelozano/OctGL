@@ -122,6 +122,9 @@
     <None Include="SampleModels\Dragon\dragon.OBJ">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="SampleModels\General\cube.obj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="SampleModels\General\cylinder.3ds">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
