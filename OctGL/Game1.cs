@@ -183,7 +183,7 @@ namespace OctGL
                         camera.distance = 0f;
 
                     if (projection == "O")
-                        ortographicMatrix = Matrix.CreateOrthographic(GraphicsDevice.Viewport.Width * (float)camera.distance * 0.001f, GraphicsDevice.Viewport.Height * (float)camera.distance * 0.001f, 1f, 100f);
+                        ortographicMatrix = Matrix.CreateOrthographic(GraphicsDevice.Viewport.Width * (float)camera.distance * 0.001f, GraphicsDevice.Viewport.Height * (float)camera.distance * 0.001f, 1f, 10000f);
                 }
                 oldState = newState;
 
