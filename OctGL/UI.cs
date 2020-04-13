@@ -658,11 +658,11 @@ namespace OctGL
                 grid.RowsProportions.Add(new Proportion());
 
                 // Add widgets
-                var lblOctantsFilled = new Label();
-                lblOctantsFilled.Text = string.Format("Octants filled: {0}", game.octree.octantsFilled);
-                lblOctantsFilled.GridRow = 0;
-                lblOctantsFilled.GridColumn = 0;
-                grid.Widgets.Add(lblOctantsFilled);
+                var lblFilledOctants = new Label();
+                lblFilledOctants.Text = string.Format("Filled octants: {0}", game.octree.octantsFilled);
+                lblFilledOctants.GridRow = 0;
+                lblFilledOctants.GridColumn = 0;
+                grid.Widgets.Add(lblFilledOctants);
 
                 var lblVertices = new Label();
                 lblVertices.Text = string.Format("Vertices: {0}", game.bModel.totalVertices());
