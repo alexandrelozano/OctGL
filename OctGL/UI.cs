@@ -274,6 +274,61 @@ namespace OctGL
                 game.projection = "P";
             };
 
+            var _mnuYZ = new MenuItem();
+            _mnuYZ.Id = "_mnuYZ";
+            _mnuYZ.Text = "YZ";
+            _mnuYZ.Selected += (s, a) =>
+            {
+
+                game.camera.rotationh = 0;
+                game.camera.rotationv = 0;
+            };
+            _menuView.Items.Add(_mnuYZ);
+
+            var _mnuXY = new MenuItem();
+            _mnuXY.Id = "_mnuXY";
+            _mnuXY.Text = "XY";
+            _mnuXY.Selected += (s, a) =>
+            {
+
+                game.camera.rotationh = 270;
+                game.camera.rotationv = 90;
+            };
+            _menuView.Items.Add(_mnuXY);
+
+            var _mnuYX = new MenuItem();
+            _mnuYX.Id = "_mnuYX";
+            _mnuYX.Text = "YX";
+            _mnuYX.Selected += (s, a) =>
+            {
+
+                game.camera.rotationh = 0;
+                game.camera.rotationv = 270;
+            };
+            _menuView.Items.Add(_mnuYX);
+
+            var _mnuXZ = new MenuItem();
+            _mnuXZ.Id = "_mnuXZ";
+            _mnuXZ.Text = "XZ";
+            _mnuXZ.Selected += (s, a) =>
+            {
+
+                game.camera.rotationh = 270;
+                game.camera.rotationv = 0;
+            };
+            _menuView.Items.Add(_mnuXZ);
+
+            var _mnuXYZ = new MenuItem();
+            _mnuXYZ.Id = "_mnuXYZ";
+            _mnuXYZ.Text = "XYZ";
+            _mnuXYZ.Selected += (s, a) =>
+            {
+
+                game.camera.rotationh = 45;
+                game.camera.rotationv = 45;
+            };
+            _menuView.Items.Add(_mnuXYZ);
+
             var _menuSep3 = new MenuSeparator();
             _menuView.Items.Add(_menuSep3);
 
