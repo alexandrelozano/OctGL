@@ -524,11 +524,15 @@ namespace OctGL
             }
         }
 
-        public void RenderToDevice(GraphicsDevice device, BasicEffect effect, EffectPass pass, Texture2D tex)
+        public void RenderToDevice(BasicEffect effect, GraphicsDevice device)
         {
             if (vertices != null && vertices.Length > 0)
             {
-                device.DrawUserPrimitives(Microsoft.Xna.Framework.Graphics.PrimitiveType.TriangleList, vertices, 0, vertices.Length / 3);
+                foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+                {
+                    pass.Apply();
+                    device.DrawUserPrimitives(Microsoft.Xna.Framework.Graphics.PrimitiveType.TriangleList, vertices, 0, vertices.Length / 3);
+                }
             }
         }
 

@@ -246,6 +246,29 @@ namespace OctGL
                 game.showBoundary = true;
             };
 
+            var _mnuWireframe = new MenuItem();
+            var _mnuSolid = new MenuItem();
+
+            _mnuWireframe.Id = "_mnuWireframe";
+            _mnuWireframe.Text = "Wireframe";
+            _mnuWireframe.Selected += (s, a) =>
+            {
+                int pos = _menuView.Items.IndexOf(_mnuWireframe);
+                _menuView.Items.Remove(_mnuWireframe);
+                _menuView.Items.Insert(pos, _mnuSolid);
+                game.wireframe = true;
+            };
+            _menuView.Items.Add(_mnuWireframe);
+
+            _mnuSolid.Id = "_mnuSolid";
+            _mnuSolid.Text = "Solid";
+            _mnuSolid.Selected += (s, a) =>
+            {
+                int pos = _menuView.Items.IndexOf(_mnuSolid);
+                _menuView.Items.Remove(_mnuSolid);
+                _menuView.Items.Insert(pos, _mnuWireframe);
+                game.wireframe = false;
+            };
 
             var _menuSep2 = new MenuSeparator();
             _menuView.Items.Add(_menuSep2);

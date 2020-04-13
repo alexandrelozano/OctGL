@@ -22,6 +22,7 @@ namespace OctGL
         public string projection;
         public Boundary boundary;
         public bool showBoundary;
+        public bool wireframe;
 
         //Camera
         public Camera camera;
@@ -108,6 +109,7 @@ namespace OctGL
 
             boundary = new Boundary(new BoundingBox());
             showBoundary = true;
+            wireframe = false;
 
             //BasicEffect
             basicEffect = new BasicEffect(GraphicsDevice);
@@ -244,16 +246,21 @@ namespace OctGL
             basicEffect.View = viewMatrix;
             basicEffect.World = worldMatrix;
             
-            RasterizerState rasterizerState = new RasterizerState();
-            rasterizerState.FillMode = FillMode.Solid;
-            rasterizerState.CullMode = CullMode.None;
-            GraphicsDevice.RasterizerState = rasterizerState;
+            RasterizerState rasterizerStateWF = new RasterizerState();
+            rasterizerStateWF.FillMode = FillMode.WireFrame;
+            rasterizerStateWF.CullMode = CullMode.None;
+            rasterizerStateWF.ScissorTestEnable = true;
+            GraphicsDevice.RasterizerState = rasterizerStateWF;
 
-            GraphicsDevice.RasterizerState = rasterizerState;
             GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
             foreach (EffectPass pass in basicEffect.CurrentTechnique.Passes)
             {
+                basicEffect.TextureEnabled = false;
+                basicEffect.VertexColorEnabled = true;
+                basicEffect.LightingEnabled = false;
+                pass.Apply();
+
                 if (showAxis)
                 {
                     axis.RenderToDevice(GraphicsDevice, basicEffect, pass);
@@ -265,32 +272,31 @@ namespace OctGL
                 }
             }
 
+            RasterizerState rasterizerStateSolid = new RasterizerState();
+            rasterizerStateSolid.FillMode = FillMode.Solid;
+            rasterizerStateSolid.CullMode = CullMode.None;
+            rasterizerStateSolid.ScissorTestEnable = true;
+            GraphicsDevice.RasterizerState = rasterizerStateSolid;
+
+            basicEffect.VertexColorEnabled = false;
+            basicEffect.TextureEnabled = true;
+            basicEffect.LightingEnabled = true;
+            basicEffect.EnableDefaultLighting();
+            basicEffect.Parameters["Texture"].SetValue(textureCrate);
+
             if (showModel && bModel.oScene != null)
             {
-                basicEffect.TextureEnabled = true;
-                basicEffect.VertexColorEnabled = false;
-                basicEffect.LightingEnabled = true;
-                basicEffect.EnableDefaultLighting();
-
-                basicEffect.Parameters["Texture"].SetValue(textureCrate);
-                //pass.Apply();
                 bModel.RenderToDevice(basicEffect);
             }
 
-            foreach (EffectPass pass in basicEffect.CurrentTechnique.Passes)
+            if (wireframe)
             {
-                if (showOctree && octree != null)
-                {
-                    basicEffect.TextureEnabled = true;
-                    basicEffect.VertexColorEnabled = false;
-                    basicEffect.LightingEnabled = true;
-                    basicEffect.EnableDefaultLighting();
+                GraphicsDevice.RasterizerState = rasterizerStateWF;
+            }
 
-                    basicEffect.Parameters["Texture"].SetValue(textureCrate);
-                    pass.Apply();
-
-                    octree.RenderToDevice(GraphicsDevice, basicEffect, pass, textureCrate);
-                }
+            if (showOctree && octree != null)
+            {
+                octree.RenderToDevice(basicEffect, GraphicsDevice);
             }
 
             ui.txtFPS.Text = string.Format("FPS: {0}", frameCounter.AverageFramesPerSecond.ToString("000.00"));

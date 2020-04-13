@@ -19,13 +19,6 @@ namespace OctGL
 
         public void RenderToDevice(GraphicsDevice device, BasicEffect effect, EffectPass pass)
         {
-            if (effect.TextureEnabled)
-            {
-                effect.TextureEnabled = false;
-                effect.VertexColorEnabled = true;
-                effect.LightingEnabled = false;
-                pass.Apply();
-            }
             var verticesX1 = new[] { new VertexPositionColor(new Vector3(bb.Min.X, bb.Min.Y, bb.Min.Z), Color.Yellow), new VertexPositionColor(new Vector3(bb.Max.X, bb.Min.Y, bb.Min.Z), Color.Yellow) };
             device.DrawUserPrimitives(PrimitiveType.LineList, verticesX1, 0, 1);
             var verticesX2 = new[] { new VertexPositionColor(new Vector3(bb.Min.X, bb.Min.Y, bb.Min.Z), Color.Yellow), new VertexPositionColor(new Vector3(bb.Min.X, bb.Max.Y, bb.Min.Z), Color.Yellow) };
@@ -50,7 +43,6 @@ namespace OctGL
             device.DrawUserPrimitives(PrimitiveType.LineList, verticesX11, 0, 1);
             var verticesX12 = new[] { new VertexPositionColor(new Vector3(bb.Max.X, bb.Min.Y, bb.Min.Z), Color.Yellow), new VertexPositionColor(new Vector3(bb.Max.X, bb.Min.Y, bb.Max.Z), Color.Yellow) };
             device.DrawUserPrimitives(PrimitiveType.LineList, verticesX12, 0, 1);
-
         }
     }
 }

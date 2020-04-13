@@ -25,11 +25,6 @@ namespace OctGL
 
         public void RenderToDevice(GraphicsDevice device, BasicEffect effect, EffectPass pass)
         {
-            effect.TextureEnabled = false;
-            effect.VertexColorEnabled = true;
-            effect.LightingEnabled = false;
-            pass.Apply();
-            
             if (full)
             {
                 var verticesX = new[] { new VertexPositionColor(new Vector3(size, 0f, 0f), Xcolor), new VertexPositionColor(new Vector3(-size, 0f, 0f), Xcolor) };
