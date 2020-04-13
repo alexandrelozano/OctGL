@@ -1,6 +1,7 @@
 # OctGL
 CSharp Monogame Octree Graphics Library
 
+This project is for [octree](https://en.wikipedia.org/wiki/Octree) spatial representation.
 
 Compiled with [MonoGame 3.7.1](https://community.monogame.net/t/monogame-3-7-1-release/11173)  
 UI created with [Myra](https://github.com/rds1983/Myra)  
