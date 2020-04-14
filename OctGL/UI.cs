@@ -544,7 +544,7 @@ namespace OctGL
                 var chkOptimizeOctree = new CheckBox();
                 chkOptimizeOctree.GridRow = 4;
                 chkOptimizeOctree.GridColumn = 1;
-                chkOptimizeOctree.IsPressed = game.optimizeOctantFaces;
+                chkOptimizeOctree.IsPressed = game.optimizeOctree;
                 chkOptimizeOctree.Click += (s1, a1) =>
                 {
                     game.optimizeOctree = chkOptimizeOctree.IsPressed;
