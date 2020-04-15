@@ -63,7 +63,8 @@ namespace OctGL
         private Cube cube;
 
         public int verticesNumber;
-        public VertexPositionNormalTexture[] vertices;
+        public VertexPositionNormalTexture[] verticesTriMesh;
+        public VertexPositionColor[] verticesQuadMesh;
 
         private AABBTriangleIntersection aabbint;
 
@@ -372,7 +373,9 @@ namespace OctGL
             Octree nYminus = null;
             Octree nXplus = null;
             Octree nXminus = null;
-            List<VertexPositionNormalTexture> lstVertices = new List<VertexPositionNormalTexture>();
+            List<VertexPositionNormalTexture> lstVerticesTriMesh = new List<VertexPositionNormalTexture>();
+            List<VertexPositionColor> lstVerticesQuadMesh = new List<VertexPositionColor>();
+
             verticesNumber = 0;
 
             st.Push(current);
@@ -382,7 +385,7 @@ namespace OctGL
 
                 if (current.state == OctreeStates.Full)
                 {
-                    cube = new Cube(current.bb, current.textureCoord);
+                    cube = new Cube(current.bb, current.textureCoord, Color.White);
 
                     if (optimizeOctantFaces)
                     {
@@ -398,7 +401,7 @@ namespace OctGL
                         Task.WaitAll(tasks);
                     }
 
-                    cube.AddVertices(lstVertices,
+                    cube.AddVertices(lstVerticesTriMesh, lstVerticesQuadMesh,
                         (nZplus == null || nZplus.state != OctreeStates.Full),
                         (nZminus == null || nZminus.state != OctreeStates.Full),
                         (nYplus == null || nYplus.state != OctreeStates.Full),
@@ -406,7 +409,7 @@ namespace OctGL
                         (nXplus == null || nXplus.state != OctreeStates.Full),
                         (nXminus == null || nXminus.state != OctreeStates.Full));
 
-                    verticesNumber = lstVertices.Count;
+                    verticesNumber = lstVerticesTriMesh.Count;
                 }
                 else if (state == OctreeStates.Mixted)
                 {
@@ -420,7 +423,8 @@ namespace OctGL
                 }
             }
 
-            vertices = lstVertices.ToArray();
+            verticesTriMesh = lstVerticesTriMesh.ToArray();
+            verticesQuadMesh = lstVerticesQuadMesh.ToArray();
         }
 
         public void Build(BModel bModel)
@@ -524,14 +528,27 @@ namespace OctGL
             }
         }
 
-        public void RenderToDevice(BasicEffect effect, GraphicsDevice device)
+        public void RenderToDevice(BasicEffect effect, GraphicsDevice device, bool wireframe)
         {
-            if (vertices != null && vertices.Length > 0)
+            if (wireframe)
             {
-                foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+                if (verticesQuadMesh != null && verticesQuadMesh.Length > 0)
                 {
-                    pass.Apply();
-                    device.DrawUserPrimitives(Microsoft.Xna.Framework.Graphics.PrimitiveType.TriangleList, vertices, 0, vertices.Length / 3);
+                    foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+                    {
+                        pass.Apply();
+                        device.DrawUserPrimitives(Microsoft.Xna.Framework.Graphics.PrimitiveType.LineList, verticesQuadMesh, 0, verticesQuadMesh.Length / 2);
+                    }
+                }
+            }
+            else {
+                if (verticesTriMesh != null && verticesTriMesh.Length > 0)
+                {
+                    foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+                    {
+                        pass.Apply();
+                        device.DrawUserPrimitives(Microsoft.Xna.Framework.Graphics.PrimitiveType.TriangleList, verticesTriMesh, 0, verticesTriMesh.Length / 3);
+                    }
                 }
             }
         }

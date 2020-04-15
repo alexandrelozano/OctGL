@@ -292,11 +292,15 @@ namespace OctGL
             if (wireframe)
             {
                 GraphicsDevice.RasterizerState = rasterizerStateWF;
+
+                basicEffect.TextureEnabled = false;
+                basicEffect.VertexColorEnabled = true;
+                basicEffect.LightingEnabled = false;
             }
 
             if (showOctree && octree != null)
             {
-                octree.RenderToDevice(basicEffect, GraphicsDevice);
+                octree.RenderToDevice(basicEffect, GraphicsDevice, wireframe);
             }
 
             ui.txtFPS.Text = string.Format("FPS: {0}", frameCounter.AverageFramesPerSecond.ToString("000.00"));
