@@ -226,6 +226,7 @@ namespace OctGL
                         }
 
                         octantsFilled++;
+                        st.Push(current.parent);
                     }
                     else if (emptyChilds == 8)
                     {
@@ -235,6 +236,8 @@ namespace OctGL
                         {
                             current.childs[j] = null;
                         }
+
+                        st.Push(current.parent);
                     }
                     else
                     {

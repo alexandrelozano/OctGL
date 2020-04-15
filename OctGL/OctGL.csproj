@@ -97,6 +97,7 @@
     <Content Include="Octree.ico" />
     <Content Include="Resources\demo.gif" />
     <Content Include="Resources\SampleLevels.jpg" />
+    <Content Include="Resources\samplepiece2wf.jpg" />
     <Content Include="SampleModels\Dragon\dragon.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
