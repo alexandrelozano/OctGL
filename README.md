@@ -10,3 +10,5 @@ Sample dragon model from [TurboSquid](https://www.turbosquid.com/es/FullPreview/
 AABB triangle intersection based on [StackOverflow](https://stackoverflow.com/questions/17458562/efficient-aabb-triangle-intersection-in-c-sharp)  
 
 ![Demo](https://raw.githubusercontent.com/alexandrelozano/OctGL/master/OctGL/Resources/demo.gif)
+
+![Sample wireframe](https://raw.githubusercontent.com/alexandrelozano/OctGL/master/OctGL/Resources/samplepiece2wf.jpg)
