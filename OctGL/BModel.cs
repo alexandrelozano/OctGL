@@ -5,6 +5,7 @@ using System.IO;
 using System.Drawing.Imaging;
 using System.Drawing;
 using System;
+using System.Collections.Generic;
 
 namespace OctGL
 {
@@ -17,6 +18,8 @@ namespace OctGL
 
         VertexBuffer[] vertexBuffers;
         IndexBuffer[] indexBuffers;
+
+        public VertexPositionColor[] verticesDrawNormals;
 
         public GraphicsDevice device;
 
@@ -181,10 +184,14 @@ namespace OctGL
             VertexPositionNormalTexture[] vertices;
             short[] indices;
             Mesh mMesh;
+            List<VertexPositionColor> lstVerticesDrawNormals = new List<VertexPositionColor>();
 
             CheckBoundary();
             Center();
             CheckBoundary();
+
+            float normal_length = (bb.Max.X - bb.Min.X) / 10.0f;
+
 
             for (int m = 0; m < count; m++)
             {
@@ -205,6 +212,12 @@ namespace OctGL
 
                     vertices[v] = new VertexPositionNormalTexture(new Vector3(mVec.X, mVec.Y, mVec.Z), 
                         new Vector3(mNor.X, mNor.Y, mNor.Z), mTex);
+
+                    Vector3 mVecN1 = new Vector3(mVec.X, mVec.Y, mVec.Z);
+                    Vector3 mVecN2 = new Vector3(mVec.X + mNor.X * normal_length , mVec.Y + mNor.Y * normal_length, mVec.Z + mNor.Z * normal_length);
+
+                    lstVerticesDrawNormals.Add(new VertexPositionColor(mVecN1, Microsoft.Xna.Framework.Color.White));
+                    lstVerticesDrawNormals.Add(new VertexPositionColor(mVecN2, Microsoft.Xna.Framework.Color.White));
                 }
 
                 int f = 0;
@@ -233,6 +246,7 @@ namespace OctGL
                 indexBuffers[m] = indexBuffer;
             }
 
+            verticesDrawNormals = lstVerticesDrawNormals.ToArray();
         }
 
         public void Center()
@@ -287,6 +301,20 @@ namespace OctGL
                 }
             }
 
+        }
+
+        public void RenderToDeviceNormals(BasicEffect effect, GraphicsDevice device)
+        {
+            
+            if (verticesDrawNormals != null && verticesDrawNormals.Length > 0)
+            {
+                foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+                {
+                    pass.Apply();
+                    device.DrawUserPrimitives(Microsoft.Xna.Framework.Graphics.PrimitiveType.LineList, verticesDrawNormals, 0, verticesDrawNormals.Length / 2);
+                }
+            }
+            
         }
 
         public void RenderToDevice(BasicEffect effect)

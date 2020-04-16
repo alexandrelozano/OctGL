@@ -246,6 +246,30 @@ namespace OctGL
                 game.showBoundary = true;
             };
 
+            var _mnuModelNormalHide = new MenuItem();
+            var _mnuModelNormalShow = new MenuItem();
+
+            _mnuModelNormalHide.Id = "_mnuModelNormalHide";
+            _mnuModelNormalHide.Text = "Hide model normals";
+            _mnuModelNormalHide.Selected += (s, a) =>
+            {
+                int pos = _menuView.Items.IndexOf(_mnuModelNormalHide);
+                _menuView.Items.Remove(_mnuModelNormalHide);
+                _menuView.Items.Insert(pos, _mnuModelNormalShow);
+                game.showModelNormals = false;
+            };
+            _menuView.Items.Add(_mnuModelNormalHide);
+
+            _mnuModelNormalShow.Id = "_mnuModelNormalShow";
+            _mnuModelNormalShow.Text = "Show model normals";
+            _mnuModelNormalShow.Selected += (s, a) =>
+            {
+                int pos = _menuView.Items.IndexOf(_mnuModelNormalShow);
+                _menuView.Items.Remove(_mnuModelNormalShow);
+                _menuView.Items.Insert(pos, _mnuModelNormalHide);
+                game.showModelNormals = true;
+            };
+
             var _mnuWireframe = new MenuItem();
             var _mnuSolid = new MenuItem();
 

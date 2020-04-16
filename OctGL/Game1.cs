@@ -22,6 +22,7 @@ namespace OctGL
         public string projection;
         public Boundary boundary;
         public bool showBoundary;
+        public bool showModelNormals;
         public bool wireframe;
 
         //Camera
@@ -79,6 +80,7 @@ namespace OctGL
             
             showModel = true;
             showOctree = true;
+            showModelNormals = true;
         }
 
         /// <summary>
@@ -270,6 +272,11 @@ namespace OctGL
                 {
                     boundary.RenderToDevice(GraphicsDevice, basicEffect, pass);
                 }
+            }
+
+            if (showModelNormals && bModel.oScene != null)
+            {
+                bModel.RenderToDeviceNormals(basicEffect, GraphicsDevice);
             }
 
             RasterizerState rasterizerStateSolid = new RasterizerState();
