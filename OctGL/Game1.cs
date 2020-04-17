@@ -11,8 +11,6 @@ namespace OctGL
     public class Game1 : Game
     {
         GraphicsDeviceManager graphics;
-        SpriteBatch spriteBatch;
-        SpriteFont font;
         FrameCounter frameCounter = new FrameCounter();
 
         UI ui;
@@ -80,7 +78,7 @@ namespace OctGL
             
             showModel = true;
             showOctree = true;
-            showModelNormals = true;
+            showModelNormals = false;
         }
 
         /// <summary>
@@ -135,10 +133,6 @@ namespace OctGL
         /// </summary>
         protected override void LoadContent()
         {
-            // Create a new SpriteBatch, which can be used to draw textures.
-            spriteBatch = new SpriteBatch(GraphicsDevice);
-            font = Content.Load<SpriteFont>("SpriteFont1");
-
             // TODO: use this.Content to load your game content here
             using (var stream = TitleContainer.OpenStream("Content/crate.jpg"))
             {

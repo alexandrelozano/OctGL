@@ -52,6 +52,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AABBTriangleIntersection.cs" />
+    <Compile Include="Arrow.cs" />
     <Compile Include="Axis.cs" />
     <Compile Include="Barycentric.cs" />
     <Compile Include="BModel.cs" />
@@ -98,6 +99,7 @@
     <Content Include="Resources\demo.gif" />
     <Content Include="Resources\SampleLevels.jpg" />
     <Content Include="Resources\samplepiece2wf.jpg" />
+    <Content Include="Resources\samplespherenormals.jpg" />
     <Content Include="SampleModels\Dragon\dragon.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

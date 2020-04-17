@@ -258,7 +258,6 @@ namespace OctGL
                 _menuView.Items.Insert(pos, _mnuModelNormalShow);
                 game.showModelNormals = false;
             };
-            _menuView.Items.Add(_mnuModelNormalHide);
 
             _mnuModelNormalShow.Id = "_mnuModelNormalShow";
             _mnuModelNormalShow.Text = "Show model normals";
@@ -269,6 +268,7 @@ namespace OctGL
                 _menuView.Items.Insert(pos, _mnuModelNormalHide);
                 game.showModelNormals = true;
             };
+            _menuView.Items.Add(_mnuModelNormalShow);
 
             var _mnuWireframe = new MenuItem();
             var _mnuSolid = new MenuItem();

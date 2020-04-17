@@ -192,7 +192,6 @@ namespace OctGL
 
             float normal_length = (bb.Max.X - bb.Min.X) / 10.0f;
 
-
             for (int m = 0; m < count; m++)
             {
                 mMesh = oScene.Meshes[m];
@@ -213,11 +212,9 @@ namespace OctGL
                     vertices[v] = new VertexPositionNormalTexture(new Vector3(mVec.X, mVec.Y, mVec.Z), 
                         new Vector3(mNor.X, mNor.Y, mNor.Z), mTex);
 
-                    Vector3 mVecN1 = new Vector3(mVec.X, mVec.Y, mVec.Z);
-                    Vector3 mVecN2 = new Vector3(mVec.X + mNor.X * normal_length , mVec.Y + mNor.Y * normal_length, mVec.Z + mNor.Z * normal_length);
+                    Arrow arrow = new Arrow(new Vector3(mVec.X, mVec.Y, mVec.Z), new Vector3(mNor.X, mNor.Y, mNor.Z), normal_length, Microsoft.Xna.Framework.Color.White);
 
-                    lstVerticesDrawNormals.Add(new VertexPositionColor(mVecN1, Microsoft.Xna.Framework.Color.White));
-                    lstVerticesDrawNormals.Add(new VertexPositionColor(mVecN2, Microsoft.Xna.Framework.Color.White));
+                    lstVerticesDrawNormals.AddRange(arrow.Create());
                 }
 
                 int f = 0;
