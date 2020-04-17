@@ -12,3 +12,5 @@ AABB triangle intersection based on [StackOverflow](https://stackoverflow.com/qu
 ![Demo](https://raw.githubusercontent.com/alexandrelozano/OctGL/master/OctGL/Resources/demo.gif)
 
 ![Sample wireframe](https://raw.githubusercontent.com/alexandrelozano/OctGL/master/OctGL/Resources/samplepiece2wf.jpg)
+
+![Sample model normals](https://raw.githubusercontent.com/alexandrelozano/OctGL/master/OctGL/Resources/samplespherenormals.jpg)
