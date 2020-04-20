@@ -279,7 +279,7 @@ namespace OctGL
                     if (current.faceUP)
                     {
                         Octree neighborZMinus = current.FindNeighborZMinusEqualSize();
-                        if (neighborZMinus != null)
+                        if (neighborZMinus != null && neighborZMinus.faceUP)
                         {
                             neighborZMinus.state = OctreeStates.Full;
                             neighborZMinus.textureCoord = new Vector2[8];
@@ -288,6 +288,7 @@ namespace OctGL
                             {
                                 neighborZMinus.textureCoord[i] = current.textureCoord[i];
                             }
+                            st.Push(neighborZMinus);
                         }
                     }
                 }
