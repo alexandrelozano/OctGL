@@ -46,7 +46,7 @@ namespace OctGL
         public short octantTextureCoordinates;
         public bool optimizeOctantFaces;
         public bool optimizeOctree;
-        public bool fillObject;
+        public string fillDirection;
         public Octree octree;
         
         public bool showModel;
@@ -72,7 +72,7 @@ namespace OctGL
             octantTextureCoordinates = 1;
             optimizeOctantFaces = true;
             optimizeOctree = true;
-            fillObject = true;
+            fillDirection = "Z-";
 
             octree = new Octree(this);
             

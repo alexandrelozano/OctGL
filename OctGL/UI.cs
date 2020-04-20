@@ -544,20 +544,37 @@ namespace OctGL
                 grid.Widgets.Add(comboTextureCoodinates);
 
                 var lblFillObject = new Label();
-                lblFillObject.Text = "Fill object";
+                lblFillObject.Text = "Fill object direction";
                 lblFillObject.GridRow = 3;
                 lblFillObject.GridColumn = 0;
                 grid.Widgets.Add(lblFillObject);
 
-                var chkFillObject = new CheckBox();
-                chkFillObject.GridRow = 3;
-                chkFillObject.GridColumn = 1;
-                chkFillObject.IsPressed = game.fillObject;
-                chkFillObject.Click += (s1, a1) =>
+                var comboFillDirection = new ComboBox
                 {
-                    game.fillObject = chkFillObject.IsPressed;
+                    GridColumn = 1,
+                    GridRow = 3
                 };
-                grid.Widgets.Add(chkFillObject);
+
+                comboFillDirection.Items.Add(new ListItem("No fill"));
+                comboFillDirection.Items.Add(new ListItem("Z+"));
+                comboFillDirection.Items.Add(new ListItem("Z-"));
+                comboFillDirection.Items.Add(new ListItem("X+"));
+                comboFillDirection.Items.Add(new ListItem("X-"));
+                comboFillDirection.Items.Add(new ListItem("Y+"));
+                comboFillDirection.Items.Add(new ListItem("Y-"));
+                for (int i = 0; i < comboFillDirection.Items.Count - 1; i++)
+                {
+                    if (comboFillDirection.Items[i].Text == game.fillDirection)
+                    {
+                        comboFillDirection.Items[i].IsSelected = true;
+                    }
+                }
+                comboFillDirection.SelectedIndexChanged += (s1, a1) =>
+                {
+                    game.fillDirection = comboFillDirection.SelectedItem.Text;
+                };
+                comboFillDirection.Width = 50;
+                grid.Widgets.Add(comboFillDirection);
 
                 var lblOptimizeOctree = new Label();
                 lblOptimizeOctree.Text = "Optimize octree";
@@ -644,7 +661,7 @@ namespace OctGL
                         if (game.bModel.tex != null)
                             game.textureCrate = game.bModel.tex;
 
-                        game.octree = new Octree(game, game.octreeDepth, game.octantTextureCoordinates, game.optimizeOctantFaces);
+                        game.octree = new Octree(game, game.octreeDepth, game.octantTextureCoordinates, game.optimizeOctantFaces, game.fillDirection);
 
                         new Thread(() =>
                         {
@@ -652,7 +669,7 @@ namespace OctGL
                             game.octree.startTime = DateTime.Now;
                             game.octree.Build(game.bModel);
                             game.octree.BuildTextureCoordinates();
-                            if (game.fillObject)
+                            if (game.fillDirection != "No fill")
                             {
                                 game.octree.Fill();
                             }

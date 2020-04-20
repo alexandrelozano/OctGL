@@ -36,8 +36,6 @@ namespace OctGL
         public Octree root;
         public short position;
         public bool faceUP;
-        public int faceUPtrue;
-        public int faceUPFalse;
 
         public BoundingBox bb;
         public Vector2[] textureCoord;
@@ -48,6 +46,7 @@ namespace OctGL
 
         public short octantTextureCoordinates;
         public bool optimizeOctantFaces;
+        public string fillDirection;
 
         public double octants;
         public double octantsMax;
@@ -79,7 +78,7 @@ namespace OctGL
             endTime = null;
         }
 
-        public Octree(Game game, short depthMax, short octantTextureCoordinates, bool optimizeOctantFaces) : this(game)
+        public Octree(Game game, short depthMax, short octantTextureCoordinates, bool optimizeOctantFaces, string fillDirection) : this(game)
         {
             this.depthMax = depthMax;
             octants = 0;
@@ -87,6 +86,7 @@ namespace OctGL
             textureCoordinates = 0;
             this.octantTextureCoordinates = octantTextureCoordinates;
             this.optimizeOctantFaces = optimizeOctantFaces;
+            this.fillDirection = fillDirection;
         }
 
         public void OpenOctree(String filePath)
@@ -278,17 +278,39 @@ namespace OctGL
                 {
                     if (current.faceUP)
                     {
-                        Octree neighborZMinus = current.FindNeighborZMinusEqualSize();
-                        if (neighborZMinus != null && neighborZMinus.faceUP)
+                        Octree neighborDown = null;
+                        switch (root.fillDirection)
                         {
-                            neighborZMinus.state = OctreeStates.Full;
-                            neighborZMinus.textureCoord = new Vector2[8];
-                            neighborZMinus.faceUP = current.faceUP;
+                            case "Z-":
+                                neighborDown = current.FindNeighborZMinusEqualSize();
+                                break;
+                            case "Z+":
+                                neighborDown = current.FindNeighborZPlusEqualSize();
+                                break;
+                            case "X-":
+                                neighborDown = current.FindNeighborXMinusEqualSize();
+                                break;
+                            case "X+":
+                                neighborDown = current.FindNeighborXPlusEqualSize();
+                                break;
+                            case "Y-":
+                                neighborDown = current.FindNeighborYMinusEqualSize();
+                                break;
+                            case "Y+":
+                                neighborDown = current.FindNeighborYPlusEqualSize();
+                                break;
+                        }
+
+                        if (neighborDown != null && neighborDown.faceUP)
+                        {
+                            neighborDown.state = OctreeStates.Full;
+                            neighborDown.textureCoord = new Vector2[8];
+                            neighborDown.faceUP = current.faceUP;
                             for (int i = 0; i < 8; i++)
                             {
-                                neighborZMinus.textureCoord[i] = current.textureCoord[i];
+                                neighborDown.textureCoord[i] = current.textureCoord[i];
                             }
-                            st.Push(neighborZMinus);
+                            st.Push(neighborDown);
                         }
                     }
                 }
@@ -387,41 +409,44 @@ namespace OctGL
             {
                 current = st.Pop();
 
-                if (current.state == OctreeStates.Full)
+                if (current != null)
                 {
-                    cube = new Cube(current.bb, current.textureCoord, Color.White);
-
-                    if (optimizeOctantFaces)
+                    if (current.state == OctreeStates.Full)
                     {
-                        var tasks = new Task[6]
+                        cube = new Cube(current.bb, current.textureCoord, Color.White);
+
+                        if (optimizeOctantFaces)
                         {
+                            var tasks = new Task[6]
+                            {
                             Task.Factory.StartNew(() => {nZplus = current.FindNeighborZPlus(); }),
                             Task.Factory.StartNew(() => {nZminus = current.FindNeighborZMinus(); }),
                             Task.Factory.StartNew(() => {nYplus = current.FindNeighborYPlus(); }),
                             Task.Factory.StartNew(() => {nYminus = current.FindNeighborYMinus(); }),
                             Task.Factory.StartNew(() => {nXplus = current.FindNeighborXPlus(); }),
                             Task.Factory.StartNew(() => {nXminus = current.FindNeighborXMinus(); })
-                        };
-                        Task.WaitAll(tasks);
+                            };
+                            Task.WaitAll(tasks);
+                        }
+
+                        cube.AddVertices(lstVerticesTriMesh, lstVerticesQuadMesh,
+                            (nZplus == null || nZplus.state != OctreeStates.Full),
+                            (nZminus == null || nZminus.state != OctreeStates.Full),
+                            (nYplus == null || nYplus.state != OctreeStates.Full),
+                            (nYminus == null || nYminus.state != OctreeStates.Full),
+                            (nXplus == null || nXplus.state != OctreeStates.Full),
+                            (nXminus == null || nXminus.state != OctreeStates.Full));
+
+                        verticesNumber = lstVerticesTriMesh.Count;
                     }
-
-                    cube.AddVertices(lstVerticesTriMesh, lstVerticesQuadMesh,
-                        (nZplus == null || nZplus.state != OctreeStates.Full),
-                        (nZminus == null || nZminus.state != OctreeStates.Full),
-                        (nYplus == null || nYplus.state != OctreeStates.Full),
-                        (nYminus == null || nYminus.state != OctreeStates.Full),
-                        (nXplus == null || nXplus.state != OctreeStates.Full),
-                        (nXminus == null || nXminus.state != OctreeStates.Full));
-
-                    verticesNumber = lstVerticesTriMesh.Count;
-                }
-                else if (state == OctreeStates.Mixted)
-                {
-                    if (current.childs != null)
+                    else if (state == OctreeStates.Mixted)
                     {
-                        for (short i = 0; i < 8; i++)
+                        if (current.childs != null)
                         {
-                            st.Push(current.childs[i]);
+                            for (short i = 0; i < 8; i++)
+                            {
+                                st.Push(current.childs[i]);
+                            }
                         }
                     }
                 }
@@ -472,17 +497,56 @@ namespace OctGL
                     {
                         intersect = true;
 
-                        if (root.bModel.oScene.Meshes[r].Normals[f.Indices[0]].Z < 0 ||
-                            root.bModel.oScene.Meshes[r].Normals[f.Indices[1]].Z < 0 ||
-                            root.bModel.oScene.Meshes[r].Normals[f.Indices[2]].Z < 0)
+                        switch (root.fillDirection)
                         {
-                            faceUP = false;
-                            root.faceUPFalse++;
-                        }
-                        else
-                        {
-                            faceUP = true;
-                            root.faceUPtrue++;
+                            case ("Z-"):
+                                if (root.bModel.oScene.Meshes[r].Normals[f.Indices[0]].Z < 0 ||
+                                    root.bModel.oScene.Meshes[r].Normals[f.Indices[1]].Z < 0 ||
+                                    root.bModel.oScene.Meshes[r].Normals[f.Indices[2]].Z < 0)
+                                        faceUP = false;
+                                    else
+                                        faceUP = true;
+                                break;
+                            case ("Z+"):
+                                if (root.bModel.oScene.Meshes[r].Normals[f.Indices[0]].Z > 0 ||
+                                    root.bModel.oScene.Meshes[r].Normals[f.Indices[1]].Z > 0 ||
+                                    root.bModel.oScene.Meshes[r].Normals[f.Indices[2]].Z > 0)
+                                    faceUP = false;
+                                else
+                                    faceUP = true;
+                                break;
+                            case ("X-"):
+                                if (root.bModel.oScene.Meshes[r].Normals[f.Indices[0]].X < 0 ||
+                                    root.bModel.oScene.Meshes[r].Normals[f.Indices[1]].X < 0 ||
+                                    root.bModel.oScene.Meshes[r].Normals[f.Indices[2]].X < 0)
+                                    faceUP = false;
+                                else
+                                    faceUP = true;
+                                break;
+                            case ("X+"):
+                                if (root.bModel.oScene.Meshes[r].Normals[f.Indices[0]].X > 0 ||
+                                    root.bModel.oScene.Meshes[r].Normals[f.Indices[1]].X > 0 ||
+                                    root.bModel.oScene.Meshes[r].Normals[f.Indices[2]].X > 0)
+                                    faceUP = false;
+                                else
+                                    faceUP = true;
+                                break;
+                            case ("Y-"):
+                                if (root.bModel.oScene.Meshes[r].Normals[f.Indices[0]].Y < 0 ||
+                                    root.bModel.oScene.Meshes[r].Normals[f.Indices[1]].Y < 0 ||
+                                    root.bModel.oScene.Meshes[r].Normals[f.Indices[2]].Y < 0)
+                                    faceUP = false;
+                                else
+                                    faceUP = true;
+                                break;
+                            case ("Y+"):
+                                if (root.bModel.oScene.Meshes[r].Normals[f.Indices[0]].Y > 0 ||
+                                    root.bModel.oScene.Meshes[r].Normals[f.Indices[1]].Y > 0 ||
+                                    root.bModel.oScene.Meshes[r].Normals[f.Indices[2]].Y > 0)
+                                    faceUP = false;
+                                else
+                                    faceUP = true;
+                                break;
                         }
 
                         break;
@@ -842,6 +906,48 @@ namespace OctGL
             }
         }
 
+        public Octree FindNeighborZPlusEqualSize()
+        {
+            if (parent == null) return null;
+            else if (position == 0) return parent.childs[NodePositions.xyZ];
+            else if (position == 2) return parent.childs[NodePositions.xYZ];
+            else if (position == 4) return parent.childs[NodePositions.XyZ];
+            else if (position == 6) return parent.childs[NodePositions.XYZ];
+            else
+            {
+                Octree tmp = parent.FindNeighborZPlusEqualSize();
+                if (tmp == null || tmp.level == 0) return null;
+                else if (tmp.level < level)
+                {
+                    if (tmp.state == OctreeStates.Empty)
+                    {
+                        tmp.state = OctreeStates.Mixted;
+                        tmp.CreateChilds(tmp.bb);
+                        for (int i = 0; i < 8; i++)
+                        {
+                            tmp.childs[i].state = OctreeStates.Empty;
+                        }
+                    }
+                    else if (tmp.state == OctreeStates.Full)
+                    {
+                        tmp.state = OctreeStates.Mixted;
+                        tmp.CreateChilds(tmp.bb);
+                        for (int i = 0; i < 8; i++)
+                        {
+                            tmp.childs[i].state = OctreeStates.Full;
+                        }
+                    }
+
+                    if (position == 1) return tmp.childs[NodePositions.xyz];
+                    else if (position == 3) return tmp.childs[NodePositions.xYz];
+                    else if (position == 5) return tmp.childs[NodePositions.Xyz];
+                    else if (position == 7) return tmp.childs[NodePositions.XYz];
+                    else return null;
+                }
+                else return tmp;
+            }
+        }
+
         public Octree FindNeighborZPlus()
         {
             if (parent == null) return null;
@@ -859,6 +965,48 @@ namespace OctGL
                     else if (position == 3) return tmp.childs[NodePositions.xYz];
                     else if (position == 5) return tmp.childs[NodePositions.Xyz];
                     else if (position == 7) return tmp.childs[NodePositions.XYz];
+                    else return null;
+                }
+                else return tmp;
+            }
+        }
+
+        public Octree FindNeighborXPlusEqualSize()
+        {
+            if (parent == null) return null;
+            else if (position == 1) return parent.childs[NodePositions.XyZ];
+            else if (position == 3) return parent.childs[NodePositions.XYZ];
+            else if (position == 0) return parent.childs[NodePositions.Xyz];
+            else if (position == 2) return parent.childs[NodePositions.XYz];
+            else
+            {
+                Octree tmp = parent.FindNeighborXPlusEqualSize();
+                if (tmp == null || tmp.level == 0) return null;
+                else if (tmp.level < level)
+                {
+                    if (tmp.state == OctreeStates.Empty)
+                    {
+                        tmp.state = OctreeStates.Mixted;
+                        tmp.CreateChilds(tmp.bb);
+                        for (int i = 0; i < 8; i++)
+                        {
+                            tmp.childs[i].state = OctreeStates.Empty;
+                        }
+                    }
+                    else if (tmp.state == OctreeStates.Full)
+                    {
+                        tmp.state = OctreeStates.Mixted;
+                        tmp.CreateChilds(tmp.bb);
+                        for (int i = 0; i < 8; i++)
+                        {
+                            tmp.childs[i].state = OctreeStates.Full;
+                        }
+                    }
+
+                    if (position == 5) return tmp.childs[NodePositions.xyZ];
+                    else if (position == 7) return tmp.childs[NodePositions.xYZ];
+                    else if (position == 4) return tmp.childs[NodePositions.xyz];
+                    else if (position == 6) return tmp.childs[NodePositions.xYz];
                     else return null;
                 }
                 else return tmp;
@@ -888,6 +1036,48 @@ namespace OctGL
             }
         }
 
+        public Octree FindNeighborXMinusEqualSize()
+        {
+            if (parent == null) return null;
+            else if (position == 5) return parent.childs[NodePositions.xyZ];
+            else if (position == 7) return parent.childs[NodePositions.xYZ];
+            else if (position == 4) return parent.childs[NodePositions.xyz];
+            else if (position == 6) return parent.childs[NodePositions.xYz];
+            else
+            {
+                Octree tmp = parent.FindNeighborXMinusEqualSize();
+                if (tmp == null || tmp.level == 0) return null;
+                else if (tmp.level < level)
+                {
+                    if (tmp.state == OctreeStates.Empty)
+                    {
+                        tmp.state = OctreeStates.Mixted;
+                        tmp.CreateChilds(tmp.bb);
+                        for (int i = 0; i < 8; i++)
+                        {
+                            tmp.childs[i].state = OctreeStates.Empty;
+                        }
+                    }
+                    else if (tmp.state == OctreeStates.Full)
+                    {
+                        tmp.state = OctreeStates.Mixted;
+                        tmp.CreateChilds(tmp.bb);
+                        for (int i = 0; i < 8; i++)
+                        {
+                            tmp.childs[i].state = OctreeStates.Full;
+                        }
+                    }
+
+                    if (position == 1) return tmp.childs[NodePositions.XyZ];
+                    else if (position == 3) return tmp.childs[NodePositions.XYZ];
+                    else if (position == 0) return tmp.childs[NodePositions.Xyz];
+                    else if (position == 2) return tmp.childs[NodePositions.XYz];
+                    else return null;
+                }
+                else return tmp;
+            }
+        }
+
         public Octree FindNeighborXMinus()
         {
             if (parent == null) return null;
@@ -911,6 +1101,48 @@ namespace OctGL
             }
         }
 
+        public Octree FindNeighborYPlusEqualSize()
+        {
+            if (parent == null) return null;
+            else if (position == 1) return parent.childs[NodePositions.xYZ];
+            else if (position == 5) return parent.childs[NodePositions.XYZ];
+            else if (position == 4) return parent.childs[NodePositions.XYz];
+            else if (position == 0) return parent.childs[NodePositions.xYz];
+            else
+            {
+                Octree tmp = parent.FindNeighborYPlusEqualSize();
+                if (tmp == null || tmp.level == 0) return null;
+                else if (tmp.level < level)
+                {
+                    if (tmp.state == OctreeStates.Empty)
+                    {
+                        tmp.state = OctreeStates.Mixted;
+                        tmp.CreateChilds(tmp.bb);
+                        for (int i = 0; i < 8; i++)
+                        {
+                            tmp.childs[i].state = OctreeStates.Empty;
+                        }
+                    }
+                    else if (tmp.state == OctreeStates.Full)
+                    {
+                        tmp.state = OctreeStates.Mixted;
+                        tmp.CreateChilds(tmp.bb);
+                        for (int i = 0; i < 8; i++)
+                        {
+                            tmp.childs[i].state = OctreeStates.Full;
+                        }
+                    }
+
+                    if (position == 3) return tmp.childs[NodePositions.xyZ];
+                    else if (position == 7) return tmp.childs[NodePositions.XyZ];
+                    else if (position == 6) return tmp.childs[NodePositions.Xyz];
+                    else if (position == 2) return tmp.childs[NodePositions.xyz];
+                    else return null;
+                }
+                else return tmp;
+            }
+        }
+
         public Octree FindNeighborYPlus()
         {
             if (parent == null) return null;
@@ -928,6 +1160,48 @@ namespace OctGL
                     else if (position == 7) return tmp.childs[NodePositions.XyZ];
                     else if (position == 6) return tmp.childs[NodePositions.Xyz];
                     else if (position == 2) return tmp.childs[NodePositions.xyz];
+                    else return null;
+                }
+                else return tmp;
+            }
+        }
+
+        public Octree FindNeighborYMinusEqualSize()
+        {
+            if (parent == null) return null;
+            else if (position == 3) return parent.childs[NodePositions.xyZ];
+            else if (position == 7) return parent.childs[NodePositions.XyZ];
+            else if (position == 6) return parent.childs[NodePositions.Xyz];
+            else if (position == 2) return parent.childs[NodePositions.xyz];
+            else
+            {
+                Octree tmp = parent.FindNeighborYMinusEqualSize();
+                if (tmp == null || tmp.level == 0) return null;
+                else if (tmp.level < level)
+                {
+                    if (tmp.state == OctreeStates.Empty)
+                    {
+                        tmp.state = OctreeStates.Mixted;
+                        tmp.CreateChilds(tmp.bb);
+                        for (int i = 0; i < 8; i++)
+                        {
+                            tmp.childs[i].state = OctreeStates.Empty;
+                        }
+                    }
+                    else if (tmp.state == OctreeStates.Full)
+                    {
+                        tmp.state = OctreeStates.Mixted;
+                        tmp.CreateChilds(tmp.bb);
+                        for (int i = 0; i < 8; i++)
+                        {
+                            tmp.childs[i].state = OctreeStates.Full;
+                        }
+                    }
+
+                    if (position == 3) return tmp.childs[NodePositions.xyZ];
+                    else if (position == 5) return tmp.childs[NodePositions.XYZ];
+                    else if (position == 4) return tmp.childs[NodePositions.XYz];
+                    else if (position == 0) return tmp.childs[NodePositions.xYz];
                     else return null;
                 }
                 else return tmp;
