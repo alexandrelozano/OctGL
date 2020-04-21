@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace OctGL
@@ -36,6 +37,7 @@ namespace OctGL
         public Octree root;
         public short position;
         public bool faceUP;
+        public string id;
 
         public BoundingBox bb;
         public Vector2[] textureCoord;
@@ -201,23 +203,29 @@ namespace OctGL
                     {
                         current.state = OctreeStates.Full;
 
-                        if (root.octantTextureCoordinates == 1)
+                        switch (root.octantTextureCoordinates)
                         {
-                            for (int j = 0; j < 8; j++)
-                            {
-                                current.textureCoord[j] = current.childs[0].textureCoord[j];
-                            }
-                        }
-                        else if (root.octantTextureCoordinates == 8)
-                        {
-                            current.textureCoord[0] = current.childs[7].textureCoord[0];
-                            current.textureCoord[1] = current.childs[1].textureCoord[1];
-                            current.textureCoord[2] = current.childs[5].textureCoord[2];
-                            current.textureCoord[3] = current.childs[3].textureCoord[3];
-                            current.textureCoord[4] = current.childs[6].textureCoord[4];
-                            current.textureCoord[5] = current.childs[0].textureCoord[5];
-                            current.textureCoord[6] = current.childs[4].textureCoord[6];
-                            current.textureCoord[7] = current.childs[2].textureCoord[7];
+                            case 0:
+                                current.textureCoord = null;
+                                break;
+                            case 1:
+                                current.textureCoord = new Vector2[8];
+                                for (int j = 0; j < 8; j++)
+                                {
+                                    current.textureCoord[j] = current.childs[0].textureCoord[j];
+                                }
+                                break;
+                            case 8:
+                                current.textureCoord = new Vector2[8];
+                                current.textureCoord[0] = current.childs[7].textureCoord[0];
+                                current.textureCoord[1] = current.childs[1].textureCoord[1];
+                                current.textureCoord[2] = current.childs[5].textureCoord[2];
+                                current.textureCoord[3] = current.childs[3].textureCoord[3];
+                                current.textureCoord[4] = current.childs[6].textureCoord[4];
+                                current.textureCoord[5] = current.childs[0].textureCoord[5];
+                                current.textureCoord[6] = current.childs[4].textureCoord[6];
+                                current.textureCoord[7] = current.childs[2].textureCoord[7];
+                                break;
                         }
 
                         for (int j = 0; j < 8; j++)
@@ -226,7 +234,10 @@ namespace OctGL
                         }
 
                         octantsFilled++;
-                        st.Push(current.parent);
+                        if (current.level > 0)
+                        {
+                            st.Push(current.parent);
+                        }
                     }
                     else if (emptyChilds == 8)
                     {
@@ -331,11 +342,11 @@ namespace OctGL
 
                 if (current.state == OctreeStates.Full)
                 {
-                    textureCoordinates += 8;
                     current.textureCoord = new Vector2[8];
 
                     if (root.octantTextureCoordinates == 1)
                     {
+                        textureCoordinates ++;
                         var pos = new Vector3();
                         pos.X = current.bb.Min.X + ((current.bb.Max.X - current.bb.Min.X) * 0.5f);
                         pos.Y = current.bb.Min.Y + ((current.bb.Max.Y - current.bb.Min.Y) * 0.5f);
@@ -350,6 +361,7 @@ namespace OctGL
                     }
                     else if (root.octantTextureCoordinates == 8)
                     {
+                        textureCoordinates += 8;
                         Vector2 textCoordInt = CalculateTextureCoordinates(current.bb.Min.X, current.bb.Min.Y, current.bb.Min.Z, current);
                         current.textureCoord[NodePositions.xyz].X = textCoordInt.X;
                         current.textureCoord[NodePositions.xyz].Y = textCoordInt.Y;
@@ -557,22 +569,29 @@ namespace OctGL
                 }
             }
 
+            
             if (intersect)
             {
-                if (level >= root.depthMax)
+                if (level == root.depthMax)
                 {
                     state = OctreeStates.Full;
-                    root.textureCoordinatesMax += 8;
 
-                    if (root.depthMax - level > 0)
+                    switch (root.octantTextureCoordinates)
                     {
-                        root.octants += Math.Pow(8, (root.depthMax - level));
+                        case 1:
+                            root.textureCoordinatesMax ++;
+                            break;
+                        case 8:
+                            root.textureCoordinatesMax += 8;
+                            break;
                     }
-                    else
+
+                    // If we are filling octree we don't need to increment counter
+                    if (root.octants < root.octantsMax)
                     {
                         root.octants++;
-                        root.octantsFilled++;
                     }
+                    root.octantsFilled++;
                 }
                 else
                 {
@@ -583,13 +602,11 @@ namespace OctGL
             else
             {
                 state = OctreeStates.Empty;
-                if (root.depthMax - level > 0)
+
+                // If we are filling octree we don't need to increment counter
+                if (root.octants < root.octantsMax)
                 {
                     root.octants += Math.Pow(8, (root.depthMax - level));
-                }
-                else
-                {
-                    root.octants++;
                 }
             }
         }
@@ -693,6 +710,7 @@ namespace OctGL
                 childs[i].root = this.root;
                 childs[i].faceUP = true;
                 childs[i].textureCoord = new Vector2[8];
+                childs[i].id = this.id + i.ToString();
             }
 
             childs[NodePositions.xyz].bb.Min.X = bb.Min.X;

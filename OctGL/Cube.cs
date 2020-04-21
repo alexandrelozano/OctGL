@@ -14,7 +14,15 @@ namespace OctGL
         public Cube(BoundingBox bb, Vector2[] textureCoord, Color color)
         {
             this.bb = bb;
-            this.textureCoord = textureCoord;
+            
+            if (textureCoord == null)
+            {
+                this.textureCoord = new Vector2[8];
+            }else
+            {
+                this.textureCoord = textureCoord;
+            }
+
             this.color = color;
             size = new Vector3((bb.Max.X - bb.Min.X) * 0.5f, (bb.Max.Y - bb.Min.Y) * 0.5f, (bb.Max.Z - bb.Min.Z) * 0.5f);
         }
