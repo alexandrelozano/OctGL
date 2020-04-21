@@ -409,49 +409,42 @@ namespace OctGL
             {
                 current = st.Pop();
 
-                if (1==1) //(current != null)
+                if (current.state == OctreeStates.Full)
                 {
-                    if (current.state == OctreeStates.Full)
+                    cube = new Cube(current.bb, current.textureCoord, Color.White);
+
+                    if (optimizeOctantFaces)
                     {
-                        cube = new Cube(current.bb, current.textureCoord, Color.White);
-
-                        if (optimizeOctantFaces)
+                        var tasks = new Task[6]
                         {
-                            var tasks = new Task[6]
-                            {
-                            Task.Factory.StartNew(() => {nZplus = current.FindNeighborZPlus(); }),
-                            Task.Factory.StartNew(() => {nZminus = current.FindNeighborZMinus(); }),
-                            Task.Factory.StartNew(() => {nYplus = current.FindNeighborYPlus(); }),
-                            Task.Factory.StartNew(() => {nYminus = current.FindNeighborYMinus(); }),
-                            Task.Factory.StartNew(() => {nXplus = current.FindNeighborXPlus(); }),
-                            Task.Factory.StartNew(() => {nXminus = current.FindNeighborXMinus(); })
-                            };
-                            Task.WaitAll(tasks);
-                        }
-
-                        cube.AddVertices(lstVerticesTriMesh, lstVerticesQuadMesh,
-                            (nZplus == null || nZplus.state != OctreeStates.Full),
-                            (nZminus == null || nZminus.state != OctreeStates.Full),
-                            (nYplus == null || nYplus.state != OctreeStates.Full),
-                            (nYminus == null || nYminus.state != OctreeStates.Full),
-                            (nXplus == null || nXplus.state != OctreeStates.Full),
-                            (nXminus == null || nXminus.state != OctreeStates.Full));
-
-                        verticesNumber = lstVerticesTriMesh.Count;
+                        Task.Factory.StartNew(() => {nZplus = current.FindNeighborZPlus(); }),
+                        Task.Factory.StartNew(() => {nZminus = current.FindNeighborZMinus(); }),
+                        Task.Factory.StartNew(() => {nYplus = current.FindNeighborYPlus(); }),
+                        Task.Factory.StartNew(() => {nYminus = current.FindNeighborYMinus(); }),
+                        Task.Factory.StartNew(() => {nXplus = current.FindNeighborXPlus(); }),
+                        Task.Factory.StartNew(() => {nXminus = current.FindNeighborXMinus(); })
+                        };
+                        Task.WaitAll(tasks);
                     }
-                    else if (state == OctreeStates.Mixted)
-                    {
-                        if (current.childs != null && current.childs[0] == null)
-                        {
-                            current.level = current.level;
-                        }
 
-                        if (current.childs != null)
+                    cube.AddVertices(lstVerticesTriMesh, lstVerticesQuadMesh,
+                        (nZplus == null || nZplus.state != OctreeStates.Full),
+                        (nZminus == null || nZminus.state != OctreeStates.Full),
+                        (nYplus == null || nYplus.state != OctreeStates.Full),
+                        (nYminus == null || nYminus.state != OctreeStates.Full),
+                        (nXplus == null || nXplus.state != OctreeStates.Full),
+                        (nXminus == null || nXminus.state != OctreeStates.Full));
+
+                    verticesNumber = lstVerticesTriMesh.Count;
+                }
+                else if (current.state == OctreeStates.Mixted)
+                {
+
+                    if (current.childs != null)
+                    {
+                        for (short i = 0; i < 8; i++)
                         {
-                            for (short i = 0; i < 8; i++)
-                            {
-                                st.Push(current.childs[i]);
-                            }
+                            st.Push(current.childs[i]);
                         }
                     }
                 }
