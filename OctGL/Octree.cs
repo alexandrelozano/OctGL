@@ -409,7 +409,7 @@ namespace OctGL
             {
                 current = st.Pop();
 
-                if (current != null)
+                if (1==1) //(current != null)
                 {
                     if (current.state == OctreeStates.Full)
                     {
@@ -441,6 +441,11 @@ namespace OctGL
                     }
                     else if (state == OctreeStates.Mixted)
                     {
+                        if (current.childs != null && current.childs[0] == null)
+                        {
+                            current.level = current.level;
+                        }
+
                         if (current.childs != null)
                         {
                             for (short i = 0; i < 8; i++)

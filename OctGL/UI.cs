@@ -529,7 +529,7 @@ namespace OctGL
                 comboTextureCoodinates.Items.Add(new ListItem("0"));
                 comboTextureCoodinates.Items.Add(new ListItem("1"));
                 comboTextureCoodinates.Items.Add(new ListItem("8"));
-                for (int i = 0; i < comboTextureCoodinates.Items.Count - 1; i++)
+                for (int i = 0; i < comboTextureCoodinates.Items.Count; i++)
                 {
                     if (comboTextureCoodinates.Items[i].Text == game.octantTextureCoordinates.ToString())
                     {
@@ -562,7 +562,7 @@ namespace OctGL
                 comboFillDirection.Items.Add(new ListItem("X-"));
                 comboFillDirection.Items.Add(new ListItem("Y+"));
                 comboFillDirection.Items.Add(new ListItem("Y-"));
-                for (int i = 0; i < comboFillDirection.Items.Count - 1; i++)
+                for (int i = 0; i < comboFillDirection.Items.Count; i++)
                 {
                     if (comboFillDirection.Items[i].Text == game.fillDirection)
                     {
