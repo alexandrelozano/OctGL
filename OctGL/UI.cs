@@ -24,6 +24,8 @@ namespace OctGL
         public TextBox txtOctreeElapsedTime;
 
         private MenuItem _menuView;
+        private MenuItem _mnuModelNormalHide;
+        private MenuItem _mnuModelNormalShow;
         private MenuItem _mnuWireframe;
         private MenuItem _mnuSolid;
         private MenuItem _mnuOrthographic;
@@ -303,27 +305,20 @@ namespace OctGL
                 game.showBoundary = true;
             };
 
-            var _mnuModelNormalHide = new MenuItem();
-            var _mnuModelNormalShow = new MenuItem();
-
+            _mnuModelNormalHide = new MenuItem();
             _mnuModelNormalHide.Id = "_mnuModelNormalHide";
-            _mnuModelNormalHide.Text = "Hide model normals";
+            _mnuModelNormalHide.Text = "Hide model normals       B";
             _mnuModelNormalHide.Selected += (s, a) =>
             {
-                int pos = _menuView.Items.IndexOf(_mnuModelNormalHide);
-                _menuView.Items.Remove(_mnuModelNormalHide);
-                _menuView.Items.Insert(pos, _mnuModelNormalShow);
-                game.showModelNormals = false;
+                ClickModelNormalHide();
             };
 
+            _mnuModelNormalShow = new MenuItem();
             _mnuModelNormalShow.Id = "_mnuModelNormalShow";
-            _mnuModelNormalShow.Text = "Show model normals";
+            _mnuModelNormalShow.Text = "Show model normals     N";
             _mnuModelNormalShow.Selected += (s, a) =>
             {
-                int pos = _menuView.Items.IndexOf(_mnuModelNormalShow);
-                _menuView.Items.Remove(_mnuModelNormalShow);
-                _menuView.Items.Insert(pos, _mnuModelNormalHide);
-                game.showModelNormals = true;
+                ClickModelNormalShow();
             };
             _menuView.Items.Add(_mnuModelNormalShow);
 
@@ -477,6 +472,29 @@ namespace OctGL
             Desktop.Widgets.Add(verticalMenu1);
             Desktop.Widgets.Add(horizontalBox);
             
+        }
+
+        public void ClickModelNormalHide()
+        {
+            int pos = _menuView.Items.IndexOf(_mnuModelNormalHide);
+            if (pos >= 0)
+            {
+                _menuView.Items.Remove(_mnuModelNormalHide);
+                _menuView.Items.Insert(pos, _mnuModelNormalShow);
+                game.showModelNormals = false;
+            }
+        }
+
+        public void ClickModelNormalShow()
+        {
+            int pos = _menuView.Items.IndexOf(_mnuModelNormalShow);
+
+            if (pos >= 0)
+            {
+                _menuView.Items.Remove(_mnuModelNormalShow);
+                _menuView.Items.Insert(pos, _mnuModelNormalHide);
+                game.showModelNormals = true;
+            }
         }
 
         public void ClickWireframe()
