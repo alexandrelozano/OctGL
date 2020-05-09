@@ -23,6 +23,12 @@ namespace OctGL
         public TextBox txtOctreeVertices;
         public TextBox txtOctreeElapsedTime;
 
+        private MenuItem _menuView;
+        private MenuItem _mnuWireframe;
+        private MenuItem _mnuSolid;
+        private MenuItem _mnuOrthographic;
+        private MenuItem _mnuPerspective;
+
         public UI(Game1 game)
         {
             this.game = game;
@@ -192,7 +198,7 @@ namespace OctGL
             };
             _menuOptions.Items.Add(_mnuOctreeColor);
 
-            var _menuView = new MenuItem();
+            _menuView = new MenuItem();
             _menuView.Id = "_menuView";
             _menuView.Text = "View";
 
@@ -321,109 +327,86 @@ namespace OctGL
             };
             _menuView.Items.Add(_mnuModelNormalShow);
 
-            var _mnuWireframe = new MenuItem();
-            var _mnuSolid = new MenuItem();
-
+            _mnuWireframe = new MenuItem();
             _mnuWireframe.Id = "_mnuWireframe";
-            _mnuWireframe.Text = "Wireframe";
+            _mnuWireframe.Text = "Wireframe                       W";
             _mnuWireframe.Selected += (s, a) =>
             {
-                int pos = _menuView.Items.IndexOf(_mnuWireframe);
-                _menuView.Items.Remove(_mnuWireframe);
-                _menuView.Items.Insert(pos, _mnuSolid);
-                game.wireframe = true;
+                ClickWireframe();
             };
             _menuView.Items.Add(_mnuWireframe);
 
+            _mnuSolid = new MenuItem();
             _mnuSolid.Id = "_mnuSolid";
-            _mnuSolid.Text = "Solid";
+            _mnuSolid.Text = "Solid                                  S";
             _mnuSolid.Selected += (s, a) =>
             {
-                int pos = _menuView.Items.IndexOf(_mnuSolid);
-                _menuView.Items.Remove(_mnuSolid);
-                _menuView.Items.Insert(pos, _mnuWireframe);
-                game.wireframe = false;
+                ClickSolid();
             };
 
             var _menuSep2 = new MenuSeparator();
             _menuView.Items.Add(_menuSep2);
 
-            var _mnuOrthographic = new MenuItem();
-            var _mnuPerspective = new MenuItem();
-
+            _mnuOrthographic = new MenuItem();
             _mnuOrthographic.Id = "_mnuOrthographic";
-            _mnuOrthographic.Text = "Orthographic";
+            _mnuOrthographic.Text = "Orthographic                   O";
             _mnuOrthographic.Selected += (s, a) =>
             {
-                int pos = _menuView.Items.IndexOf(_mnuOrthographic);
-                _menuView.Items.Remove(_mnuOrthographic);
-                _menuView.Items.Insert(pos, _mnuPerspective);
-                game.projection = "O";
+                ClickOrthographic();
             };
             _menuView.Items.Add(_mnuOrthographic);
 
+            _mnuPerspective = new MenuItem();
             _mnuPerspective.Id = "_menuBoundaryShow";
-            _mnuPerspective.Text = "Perspective";
+            _mnuPerspective.Text = "Perspective                       P";
             _mnuPerspective.Selected += (s, a) =>
             {
-                int pos = _menuView.Items.IndexOf(_mnuPerspective);
-                _menuView.Items.Remove(_mnuPerspective);
-                _menuView.Items.Insert(pos, _mnuOrthographic);
-                game.projection = "P";
+                ClickPerspective();
             };
 
             var _mnuYZ = new MenuItem();
             _mnuYZ.Id = "_mnuYZ";
-            _mnuYZ.Text = "YZ";
+            _mnuYZ.Text = "YZ                                      1";
+                          
             _mnuYZ.Selected += (s, a) =>
             {
-
-                game.camera.rotationh = 0;
-                game.camera.rotationv = 0;
+                ClickYZ();
             };
             _menuView.Items.Add(_mnuYZ);
 
             var _mnuXY = new MenuItem();
             _mnuXY.Id = "_mnuXY";
-            _mnuXY.Text = "XY";
+            _mnuXY.Text = "XY                                      2";
             _mnuXY.Selected += (s, a) =>
             {
-
-                game.camera.rotationh = 270;
-                game.camera.rotationv = 90;
+                ClickXY();
             };
             _menuView.Items.Add(_mnuXY);
 
             var _mnuYX = new MenuItem();
             _mnuYX.Id = "_mnuYX";
-            _mnuYX.Text = "YX";
+            _mnuYX.Text = "YX                                      3";
             _mnuYX.Selected += (s, a) =>
             {
-
-                game.camera.rotationh = 0;
-                game.camera.rotationv = 270;
+                ClickYX();
             };
             _menuView.Items.Add(_mnuYX);
 
             var _mnuXZ = new MenuItem();
             _mnuXZ.Id = "_mnuXZ";
-            _mnuXZ.Text = "XZ";
+            _mnuXZ.Text = "XZ                                      4";
             _mnuXZ.Selected += (s, a) =>
             {
-
-                game.camera.rotationh = 270;
-                game.camera.rotationv = 0;
+                ClickXZ();
             };
             _menuView.Items.Add(_mnuXZ);
 
             var _mnuXYZ = new MenuItem();
             _mnuXYZ.Id = "_mnuXYZ";
-            _mnuXYZ.Text = "XYZ";
+            _mnuXYZ.Text = "XYZ                                    5";
             _mnuXYZ.Selected += (s, a) =>
             {
-
-                game.camera.rotationh = 45;
-                game.camera.rotationv = 45;
+                ClickXYZ();
             };
             _menuView.Items.Add(_mnuXYZ);
 
@@ -494,6 +477,84 @@ namespace OctGL
             Desktop.Widgets.Add(verticalMenu1);
             Desktop.Widgets.Add(horizontalBox);
             
+        }
+
+        public void ClickWireframe()
+        {
+            int pos = _menuView.Items.IndexOf(_mnuWireframe);
+
+            if (pos >= 0)
+            {
+                _menuView.Items.Remove(_mnuWireframe);
+                _menuView.Items.Insert(pos, _mnuSolid);
+                game.wireframe = true;
+            }
+        }
+
+        public void ClickSolid()
+        {
+            int pos = _menuView.Items.IndexOf(_mnuSolid);
+
+            if (pos >= 0)
+            {
+                _menuView.Items.Remove(_mnuSolid);
+                _menuView.Items.Insert(pos, _mnuWireframe);
+                game.wireframe = false;
+            }
+        }
+
+        public void ClickPerspective()
+        {
+            int pos = _menuView.Items.IndexOf(_mnuPerspective);
+
+            if (pos >= 0)
+            {
+                _menuView.Items.Remove(_mnuPerspective);
+                _menuView.Items.Insert(pos, _mnuOrthographic);
+                game.projection = "P";
+            }
+        }
+
+        public void ClickOrthographic()
+        {
+            int pos = _menuView.Items.IndexOf(_mnuOrthographic);
+
+            if (pos >= 0)
+            {
+                _menuView.Items.Remove(_mnuOrthographic);
+                _menuView.Items.Insert(pos, _mnuPerspective);
+                game.projection = "O";
+            }
+        }
+
+        public void ClickYZ()
+        {
+            game.camera.rotationh = 0;
+            game.camera.rotationv = 0;
+        }
+
+        public void ClickXY()
+        {
+            game.camera.rotationh = 270;
+            game.camera.rotationv = 90;
+        }
+
+        public void ClickYX()
+        {
+            game.camera.rotationh = 0;
+            game.camera.rotationv = 270;
+        }
+
+        public void ClickXZ()
+        {
+            game.camera.rotationh = 270;
+            game.camera.rotationv = 0;
+        }
+
+        public void ClickXYZ()
+        {
+            game.camera.rotationh = 45;
+            game.camera.rotationv = 45;
         }
 
         public MenuItem CreateBuildFromModel()
