@@ -42,8 +42,10 @@ namespace OctGL
         //BasicEffect for rendering
         BasicEffect basicEffect;
 
-        public Texture2D textureDefault;
-        public Texture2D textureSolid;
+        public Texture2D textureOctree;
+        public Texture2D textureModel;
+        public Texture2D textureOctreeDefault;
+        public Texture2D textureModelDefault;
 
         public BModel bModel;
         public short octreeDepth;
@@ -138,10 +140,22 @@ namespace OctGL
         protected override void LoadContent()
         {
             // TODO: use this.Content to load your game content here
-            textureSolid = Texture2D.FromStream(this.GraphicsDevice, GenerateSolidImage(System.Drawing.Color.Yellow));
-            textureDefault = textureSolid;
-                
+            setOctreeColor(System.Drawing.Color.Yellow);
+            setModelColor(System.Drawing.Color.Orange);
+
             ui.CreateUI();
+        }
+
+        public void setOctreeColor(System.Drawing.Color color)
+        {
+            textureOctreeDefault = Texture2D.FromStream(this.GraphicsDevice, GenerateSolidImage(color));
+            textureOctree = textureOctreeDefault;
+        }
+
+        public void setModelColor(System.Drawing.Color color)
+        {
+            textureModelDefault = Texture2D.FromStream(this.GraphicsDevice, GenerateSolidImage(color));
+            textureModel = textureModelDefault;
         }
 
         protected MemoryStream GenerateSolidImage(System.Drawing.Color color)
@@ -297,7 +311,7 @@ namespace OctGL
             basicEffect.TextureEnabled = true;
             basicEffect.LightingEnabled = true;
             basicEffect.EnableDefaultLighting();
-            basicEffect.Parameters["Texture"].SetValue(textureDefault);
+            basicEffect.Parameters["Texture"].SetValue(textureModel);
 
             if (showModel && bModel.oScene != null)
             {
@@ -315,6 +329,7 @@ namespace OctGL
 
             if (showOctree && octree != null)
             {
+                basicEffect.Parameters["Texture"].SetValue(textureOctree);
                 octree.RenderToDevice(basicEffect, GraphicsDevice, wireframe);
             }
 

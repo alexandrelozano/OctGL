@@ -2,6 +2,7 @@
 using Myra;
 using Myra.Graphics2D.TextureAtlases;
 using Myra.Graphics2D.UI;
+using Myra.Graphics2D.UI.ColorPicker;
 using Myra.Graphics2D.UI.File;
 using System;
 using System.IO;
@@ -140,6 +141,56 @@ namespace OctGL
             _menuOptions.Text = "Options";
 
             _menuOptions.Items.Add(CreateAxisOptions());
+
+            var _mnuModelColor = new MenuItem();
+            _mnuModelColor.Id = "_mnuOctreeColor";
+            _mnuModelColor.Text = "Model color...";
+            _mnuModelColor.Selected += (s, a) =>
+            {
+                ColorPickerDialog dialog = new ColorPickerDialog
+                {
+                    Color = Color.Yellow
+                };
+
+                dialog.Closed += (s2, a2) =>
+                {
+                    if (!dialog.Result)
+                    {
+                        // "Cancel" or Escape
+                        return;
+                    }
+
+                    game.setModelColor(System.Drawing.Color.FromArgb(dialog.Color.R, dialog.Color.G, dialog.Color.B));
+                };
+
+                dialog.ShowModal();
+            };
+            _menuOptions.Items.Add(_mnuModelColor);
+
+            var _mnuOctreeColor = new MenuItem();
+            _mnuOctreeColor.Id = "_mnuOctreeColor";
+            _mnuOctreeColor.Text = "Octree color...";
+            _mnuOctreeColor.Selected += (s, a) =>
+            {
+                ColorPickerDialog dialog = new ColorPickerDialog
+                {
+                    Color = Color.Yellow
+                };
+
+                dialog.Closed += (s2, a2) =>
+                {
+                    if (!dialog.Result)
+                    {
+                        // "Cancel" or Escape
+                        return;
+                    }
+
+                    game.setOctreeColor(System.Drawing.Color.FromArgb(dialog.Color.R,dialog.Color.G, dialog.Color.B));
+                };
+
+                dialog.ShowModal();
+            };
+            _menuOptions.Items.Add(_mnuOctreeColor);
 
             var _menuView = new MenuItem();
             _menuView.Id = "_menuView";
@@ -659,9 +710,15 @@ namespace OctGL
                         game.axis.size = game.bModel.bb.Max.Length();
                         game.boundary.bb = game.bModel.bb;
                         if (game.bModel.tex != null)
-                            game.textureDefault = game.bModel.tex;
+                        {
+                            game.textureModel = game.bModel.tex;
+                            game.textureOctree = game.bModel.tex;
+                        }
                         else
-                            game.textureDefault = game.textureSolid;
+                        {
+                            game.textureModel = game.textureModelDefault;
+                            game.textureOctree = game.textureOctreeDefault;
+                        }
 
                         game.octree = new Octree(game, game.octreeDepth, game.octantTextureCoordinates, game.optimizeOctantFaces, game.fillDirection);
 
