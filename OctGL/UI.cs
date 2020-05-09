@@ -659,7 +659,9 @@ namespace OctGL
                         game.axis.size = game.bModel.bb.Max.Length();
                         game.boundary.bb = game.bModel.bb;
                         if (game.bModel.tex != null)
-                            game.textureCrate = game.bModel.tex;
+                            game.textureDefault = game.bModel.tex;
+                        else
+                            game.textureDefault = game.textureSolid;
 
                         game.octree = new Octree(game, game.octreeDepth, game.octantTextureCoordinates, game.optimizeOctantFaces, game.fillDirection);
 

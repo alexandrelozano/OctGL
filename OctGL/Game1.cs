@@ -1,6 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Reflection;
 
 namespace OctGL
@@ -39,7 +42,8 @@ namespace OctGL
         //BasicEffect for rendering
         BasicEffect basicEffect;
 
-        public Texture2D textureCrate;
+        public Texture2D textureDefault;
+        public Texture2D textureSolid;
 
         public BModel bModel;
         public short octreeDepth;
@@ -134,12 +138,22 @@ namespace OctGL
         protected override void LoadContent()
         {
             // TODO: use this.Content to load your game content here
-            using (var stream = TitleContainer.OpenStream("Content/crate.jpg"))
-            {
-                textureCrate = Texture2D.FromStream(this.GraphicsDevice, stream);
-            }
-
+            textureSolid = Texture2D.FromStream(this.GraphicsDevice, GenerateSolidImage(System.Drawing.Color.Yellow));
+            textureDefault = textureSolid;
+                
             ui.CreateUI();
+        }
+
+        protected MemoryStream GenerateSolidImage(System.Drawing.Color color)
+        {
+            Bitmap b = new Bitmap(16, 16);
+            using (Graphics g = Graphics.FromImage(b))
+                g.Clear(color);
+
+            var memStream = new MemoryStream();
+            b.Save(memStream, ImageFormat.Jpeg);
+
+            return memStream;
         }
 
         /// <summary>
@@ -231,7 +245,7 @@ namespace OctGL
 
             frameCounter.Update(deltaTime);
 
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(Microsoft.Xna.Framework.Color.CornflowerBlue);
 
             // TODO: Add your drawing code here
             if (projection=="P")
@@ -283,7 +297,7 @@ namespace OctGL
             basicEffect.TextureEnabled = true;
             basicEffect.LightingEnabled = true;
             basicEffect.EnableDefaultLighting();
-            basicEffect.Parameters["Texture"].SetValue(textureCrate);
+            basicEffect.Parameters["Texture"].SetValue(textureDefault);
 
             if (showModel && bModel.oScene != null)
             {

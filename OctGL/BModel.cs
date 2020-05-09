@@ -34,6 +34,7 @@ namespace OctGL
 
             bb.Max = Vector3.Zero;
             bb.Min = Vector3.Zero;
+            tex = null;
 
             var ctx = new Assimp.AssimpContext();
 
