@@ -24,6 +24,14 @@ namespace OctGL
         public TextBox txtOctreeElapsedTime;
 
         private MenuItem _menuView;
+        private MenuItem _mnuModelHide;
+        private MenuItem _mnuModelShow;
+        private MenuItem _mnuOctreeHide;
+        private MenuItem _mnuOctreeShow;
+        private MenuItem _mnuAxisHide;
+        private MenuItem _mnuAxisShow;
+        private MenuItem _mnuBoundaryHide;
+        private MenuItem _mnuBoundaryShow;
         private MenuItem _mnuModelNormalHide;
         private MenuItem _mnuModelNormalShow;
         private MenuItem _mnuWireframe;
@@ -209,100 +217,72 @@ namespace OctGL
             var _menuSep1 = new MenuSeparator();
             _menuView.Items.Add(_menuSep1);
 
-            var _mnuModelHide = new MenuItem();
-            var _mnuModelShow = new MenuItem();
-
+            _mnuModelHide = new MenuItem();
             _mnuModelHide.Id = "_mnuModelHide";
-            _mnuModelHide.Text = "Hide model";
+            _mnuModelHide.Text = "Hide model                      E";
             _mnuModelHide.Selected += (s, a) =>
             {
-                int pos = _menuView.Items.IndexOf(_mnuModelHide);
-                _menuView.Items.Remove(_mnuModelHide);
-                _menuView.Items.Insert(pos, _mnuModelShow);
-                game.showModel = false;
+                ClickModelHide();
             };
             _menuView.Items.Add(_mnuModelHide);
 
+            _mnuModelShow = new MenuItem();
             _mnuModelShow.Id = "_mnuModelShow";
-            _mnuModelShow.Text = "Show model";
+            _mnuModelShow.Text = "Show model                     D";
             _mnuModelShow.Selected += (s, a) =>
             {
-                int pos = _mnuModelShow.Menu.Items.IndexOf(_mnuModelShow);
-                _menuView.Items.Remove(_mnuModelShow);
-                _menuView.Items.Insert(pos, _mnuModelHide);
-                game.showModel = true;
+                ClickModelShow();
             };
 
-            var _mnuOctreeHide = new MenuItem();
-            var _mnuOctreeShow = new MenuItem();
-
+            _mnuOctreeHide = new MenuItem();
             _mnuOctreeHide.Id = "_mnuOctreeHide";
-            _mnuOctreeHide.Text = "Hide octree";
+            _mnuOctreeHide.Text = "Hide octree                      R";
             _mnuOctreeHide.Selected += (s, a) =>
             {
-                int pos = _menuView.Items.IndexOf(_mnuOctreeHide);
-                _menuView.Items.Remove(_mnuOctreeHide);
-                _menuView.Items.Insert(pos, _mnuOctreeShow);
-                game.showOctree = false;
+                ClickOctreeHide();
             };
             _menuView.Items.Add(_mnuOctreeHide);
 
+            _mnuOctreeShow = new MenuItem();
             _mnuOctreeShow.Id = "_mnuOctreeShow";
-            _mnuOctreeShow.Text = "Show octree";
+            _mnuOctreeShow.Text = "Show octree                     F";
             _mnuOctreeShow.Selected += (s, a) =>
             {
-                int pos = _menuView.Items.IndexOf(_mnuOctreeShow);
-                _menuView.Items.Remove(_mnuOctreeShow);
-                _menuView.Items.Insert(pos, _mnuOctreeHide);
-                game.showOctree = true;
+                ClickOctreeShow();
             };
 
-            var _mnuAxisHide = new MenuItem();
-            var _mnuAxisShow = new MenuItem();
-
+            _mnuAxisHide = new MenuItem();
             _mnuAxisHide.Id = "_mnuAxisHide";
-            _mnuAxisHide.Text = "Hide axis";
+            _mnuAxisHide.Text = "Hide axis                          T";
             _mnuAxisHide.Selected += (s, a) =>
             {
-                int pos = _menuView.Items.IndexOf(_mnuAxisHide);
-                _menuView.Items.Remove(_mnuAxisHide);
-                _menuView.Items.Insert(pos, _mnuAxisShow);
-                game.showAxis = false;
+                ClickAxisHide();
             };
             _menuView.Items.Add(_mnuAxisHide);
 
+            _mnuAxisShow = new MenuItem();
             _mnuAxisShow.Id = "_mnuAxisShow";
-            _mnuAxisShow.Text = "Show axis";
+            _mnuAxisShow.Text = "Show axis                        G";
             _mnuAxisShow.Selected += (s, a) =>
             {
-                int pos = _menuView.Items.IndexOf(_mnuAxisShow);
-                _menuView.Items.Remove(_mnuAxisShow);
-                _menuView.Items.Insert(pos, _mnuAxisHide);
-                game.showAxis = true;
+                ClickAxisShow();
             };
 
-            var _mnuBoundaryHide = new MenuItem();
-            var _mnuBoundaryShow = new MenuItem();
-
+            _mnuBoundaryHide = new MenuItem();
             _mnuBoundaryHide.Id = "_menuBoundaryHide";
-            _mnuBoundaryHide.Text = "Hide boundary";
+            _mnuBoundaryHide.Text = "Hide boundary                U";
             _mnuBoundaryHide.Selected += (s, a) =>
             {
-                int pos = _menuView.Items.IndexOf(_mnuBoundaryHide);
-                _menuView.Items.Remove(_mnuBoundaryHide);
-                _menuView.Items.Insert(pos, _mnuBoundaryShow);
-                game.showBoundary = false;
+                ClickBoundaryHide();
             };
             _menuView.Items.Add(_mnuBoundaryHide);
 
+            _mnuBoundaryShow = new MenuItem();
             _mnuBoundaryShow.Id = "_menuBoundaryShow";
-            _mnuBoundaryShow.Text = "Show boundary";
+            _mnuBoundaryShow.Text = "Show boundary                J";
             _mnuBoundaryShow.Selected += (s, a) =>
             {
-                int pos = _menuView.Items.IndexOf(_mnuBoundaryShow);
-                _menuView.Items.Remove(_mnuBoundaryShow);
-                _menuView.Items.Insert(pos, _mnuBoundaryHide);
-                game.showBoundary = true;
+                ClickBoundaryShow();
             };
 
             _mnuModelNormalHide = new MenuItem();
@@ -472,6 +452,94 @@ namespace OctGL
             Desktop.Widgets.Add(verticalMenu1);
             Desktop.Widgets.Add(horizontalBox);
             
+        }
+
+        public void ClickModelHide()
+        {
+            int pos = _menuView.Items.IndexOf(_mnuModelHide);
+            if (pos >= 0)
+            {
+                _menuView.Items.Remove(_mnuModelHide);
+                _menuView.Items.Insert(pos, _mnuModelShow);
+                game.showModel = false;
+            }
+        }
+
+        public void ClickModelShow()
+        {
+            int pos = _menuView.Items.IndexOf(_mnuModelShow);
+            if (pos >= 0)
+            {
+                _menuView.Items.Remove(_mnuModelShow);
+                _menuView.Items.Insert(pos, _mnuModelHide);
+                game.showModel = true;
+            }
+        }
+
+        public void ClickOctreeHide()
+        {
+            int pos = _menuView.Items.IndexOf(_mnuOctreeHide);
+            if (pos >= 0)
+            {
+                _menuView.Items.Remove(_mnuOctreeHide);
+                _menuView.Items.Insert(pos, _mnuOctreeShow);
+                game.showOctree = false;
+            }
+        }
+
+        public void ClickOctreeShow()
+        {
+            int pos = _menuView.Items.IndexOf(_mnuOctreeShow);
+            if (pos >= 0)
+            {
+                _menuView.Items.Remove(_mnuOctreeShow);
+                _menuView.Items.Insert(pos, _mnuOctreeHide);
+                game.showOctree = true;
+            }
+        }
+
+        public void ClickAxisHide()
+        {
+            int pos = _menuView.Items.IndexOf(_mnuAxisHide);
+            if (pos >= 0)
+            {
+                _menuView.Items.Remove(_mnuAxisHide);
+                _menuView.Items.Insert(pos, _mnuAxisShow);
+                game.showAxis = false;
+            }
+        }
+
+        public void ClickAxisShow()
+        {
+            int pos = _menuView.Items.IndexOf(_mnuAxisShow);
+            if (pos >= 0)
+            {
+                _menuView.Items.Remove(_mnuAxisShow);
+                _menuView.Items.Insert(pos, _mnuAxisHide);
+                game.showAxis = true;
+            }
+        }
+
+        public void ClickBoundaryHide()
+        {
+            int pos = _menuView.Items.IndexOf(_mnuBoundaryHide);
+            if (pos >= 0)
+            {
+                _menuView.Items.Remove(_mnuBoundaryHide);
+                _menuView.Items.Insert(pos, _mnuBoundaryShow);
+                game.showBoundary = false;
+            }
+        }
+
+        public void ClickBoundaryShow()
+        {
+            int pos = _menuView.Items.IndexOf(_mnuBoundaryShow);
+            if (pos >= 0)
+            {
+                _menuView.Items.Remove(_mnuBoundaryShow);
+                _menuView.Items.Insert(pos, _mnuBoundaryHide);
+                game.showBoundary = true;
+            }
         }
 
         public void ClickModelNormalHide()

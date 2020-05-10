@@ -243,6 +243,18 @@ namespace OctGL
                     if (projection == "P") camera.distance -= Camera.distanceSpeed;
                 }
 
+                if (Keyboard.GetState().IsKeyDown(Keys.E)) ui.ClickModelShow();
+                if (Keyboard.GetState().IsKeyDown(Keys.D)) ui.ClickModelHide();
+
+                if (Keyboard.GetState().IsKeyDown(Keys.R)) ui.ClickOctreeShow();
+                if (Keyboard.GetState().IsKeyDown(Keys.F)) ui.ClickOctreeHide();
+
+                if (Keyboard.GetState().IsKeyDown(Keys.T)) ui.ClickAxisHide();
+                if (Keyboard.GetState().IsKeyDown(Keys.G)) ui.ClickAxisShow();
+
+                if (Keyboard.GetState().IsKeyDown(Keys.U)) ui.ClickBoundaryHide();
+                if (Keyboard.GetState().IsKeyDown(Keys.J)) ui.ClickBoundaryShow();
+
                 if (Keyboard.GetState().IsKeyDown(Keys.N)) ui.ClickModelNormalShow();
                 if (Keyboard.GetState().IsKeyDown(Keys.H)) ui.ClickModelNormalHide();
 
