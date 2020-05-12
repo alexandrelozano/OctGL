@@ -209,7 +209,7 @@ namespace OctGL
                         camera.distance = 0f;
 
                     if (projection == "O")
-                        ortographicMatrix = Matrix.CreateOrthographic(GraphicsDevice.Viewport.Width * (float)camera.distance * 0.001f, GraphicsDevice.Viewport.Height * (float)camera.distance * 0.001f, 1f, 10000f);
+                        CalculateOrtographicMatrix();
                 }
                 oldState = newState;
 
@@ -276,6 +276,11 @@ namespace OctGL
             base.Update(gameTime);
         }
 
+        public void CalculateOrtographicMatrix()
+        {
+            ortographicMatrix = Matrix.CreateOrthographic(GraphicsDevice.Viewport.Width * (float)camera.distance * 0.001f, GraphicsDevice.Viewport.Height * (float)camera.distance * 0.001f, 1f, 10000f);
+        }
+
         /// <summary>
         /// This is called when the game should draw itself.
         /// </summary>
@@ -290,9 +295,15 @@ namespace OctGL
 
             // TODO: Add your drawing code here
             if (projection=="P")
+            {
                 basicEffect.Projection = perspectiveMatrix;
+            }
             else
+            {
                 basicEffect.Projection = ortographicMatrix;
+            }
+
+            //System.Console.WriteLine("basicEffect.Projection:" + basicEffect.Projection.ToString());
 
             basicEffect.View = viewMatrix;
             basicEffect.World = worldMatrix;

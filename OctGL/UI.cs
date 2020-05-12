@@ -610,6 +610,7 @@ namespace OctGL
                 _menuView.Items.Remove(_mnuOrthographic);
                 _menuView.Items.Insert(pos, _mnuPerspective);
                 game.projection = "O";
+                game.CalculateOrtographicMatrix();
             }
         }
 
