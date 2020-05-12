@@ -365,7 +365,14 @@ namespace OctGL
             ui.txtRotationV.Text = string.Format("V: {0}", camera.rotationv.ToString("000."));
             ui.txtDistance.Text = string.Format("D: {0}", camera.distance.ToString("00.00"));
             ui.txtOctreeBuild.Text = string.Format("Octants: {0} of {1}", octree.octants, octree.octantsMax);
-            ui.txtOctreeTextureCoordinates.Text = string.Format("Texture coordinates: {0} of {1}", octree.textureCoordinates, octree.textureCoordinatesMax);
+            if (octree.buildingStage=="Texture coordinates...")
+            {
+                ui.txtOctreeBuildInfo.Text = string.Format("Texture coordinates: {0} of {1}", octree.textureCoordinates, octree.textureCoordinatesMax);
+            }
+            else
+            {
+                ui.txtOctreeBuildInfo.Text = octree.buildingStage;
+            }
             ui.txtOctreeVertices.Text = string.Format("Vertices: {0}", octree.verticesNumber);
             ui.txtOctreeElapsedTime.Text = string.Format("{0}ms", octree.elapsedTime().TotalMilliseconds.ToString("0."));
             ui.Render();

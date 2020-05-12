@@ -19,7 +19,7 @@ namespace OctGL
         public TextBox txtRotationH;
         public TextBox txtDistance;
         public TextBox txtOctreeBuild;
-        public TextBox txtOctreeTextureCoordinates;
+        public TextBox txtOctreeBuildInfo;
         public TextBox txtOctreeVertices;
         public TextBox txtOctreeElapsedTime;
 
@@ -75,8 +75,8 @@ namespace OctGL
             txtOctreeBuild = new TextBox();
             horizontalBox.Widgets.Add(txtOctreeBuild);
 
-            txtOctreeTextureCoordinates = new TextBox();
-            horizontalBox.Widgets.Add(txtOctreeTextureCoordinates);
+            txtOctreeBuildInfo = new TextBox();
+            horizontalBox.Widgets.Add(txtOctreeBuildInfo);
 
             txtOctreeVertices = new TextBox();
             horizontalBox.Widgets.Add(txtOctreeVertices);
@@ -884,6 +884,7 @@ namespace OctGL
                                 game.octree.Optimize();
                             }
                             game.octree.BuildMesh();
+                            game.octree.buildingStage = "";
                             game.octree.endTime = DateTime.Now;
                         }).Start();
                     };

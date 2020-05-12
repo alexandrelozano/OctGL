@@ -54,6 +54,8 @@ namespace OctGL
         public double octantsMax;
         public double octantsFilled;
 
+        public string buildingStage;
+
         public double textureCoordinates;
         public double textureCoordinatesMax;
 
@@ -171,6 +173,8 @@ namespace OctGL
 
         public void Optimize()
         {
+            buildingStage = "Optimizing...";
+
             Stack<Octree> st = new Stack<Octree>();
             Octree current = this;
             int emptyChilds;
@@ -267,6 +271,8 @@ namespace OctGL
 
         public void Fill()
         {
+            buildingStage = "Filling...";
+
             Stack<Octree> st = new Stack<Octree>();
             Octree current = this;
 
@@ -330,6 +336,8 @@ namespace OctGL
 
         public void BuildTextureCoordinates()
         {
+            buildingStage = "Texture coordinates...";
+
             Stack<Octree> st = new Stack<Octree>();
             Octree current = this;
 
@@ -403,6 +411,8 @@ namespace OctGL
 
         public void BuildMesh()
         {
+            buildingStage = "Building mesh...";
+
             Stack<Octree> st = new Stack<Octree>();
             Octree current = this;
             Octree nZplus = null;
@@ -468,6 +478,7 @@ namespace OctGL
 
         public void Build(BModel bModel)
         {
+            buildingStage = "Building...";
             this.bModel = bModel;
             bb = bModel.bb;
             textureCoordinates = 0;
