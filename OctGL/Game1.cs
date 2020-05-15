@@ -105,7 +105,7 @@ namespace OctGL
             perspectiveMatrix = Matrix.CreatePerspectiveFieldOfView(
                                MathHelper.ToRadians(45f),
                                GraphicsDevice.DisplayMode.AspectRatio,
-                               1f, 10000f);
+                               0.0001f, 10000f);
             ortographicMatrix = Matrix.CreateOrthographic(GraphicsDevice.Viewport.Width*(float)camera.distance*0.001f, GraphicsDevice.Viewport.Height * (float)camera.distance * 0.001f, 1f, 100f);
 
             worldMatrix = Matrix.CreateWorld(Vector3.Zero, Vector3.Forward, Vector3.Up);
@@ -246,8 +246,8 @@ namespace OctGL
                 if (Keyboard.GetState().IsKeyDown(Keys.E)) ui.ClickModelShow();
                 if (Keyboard.GetState().IsKeyDown(Keys.D)) ui.ClickModelHide();
 
-                if (Keyboard.GetState().IsKeyDown(Keys.R)) ui.ClickOctreeShow();
-                if (Keyboard.GetState().IsKeyDown(Keys.F)) ui.ClickOctreeHide();
+                if (Keyboard.GetState().IsKeyDown(Keys.R)) ui.ClickOctreeHide();
+                if (Keyboard.GetState().IsKeyDown(Keys.F)) ui.ClickOctreeShow(); 
 
                 if (Keyboard.GetState().IsKeyDown(Keys.T)) ui.ClickAxisHide();
                 if (Keyboard.GetState().IsKeyDown(Keys.G)) ui.ClickAxisShow();

@@ -18,10 +18,13 @@ namespace OctGL
 
         VertexBuffer[] vertexBuffers;
         IndexBuffer[] indexBuffers;
+        Texture2D[] textureModels;
 
         public VertexPositionColor[] verticesDrawNormals;
 
         public GraphicsDevice device;
+
+        public String file;
 
         public BModel(GraphicsDevice device)
         {
@@ -32,6 +35,7 @@ namespace OctGL
         {
             string result  = "";
 
+            this.file = file;
             bb.Max = Vector3.Zero;
             bb.Min = Vector3.Zero;
             tex = null;
@@ -58,15 +62,21 @@ namespace OctGL
                     PostProcessSteps.SplitLargeMeshes
                 );
 
-                SetUpVertices();
-
                 if (oScene.MaterialCount > 0)
                 {
-                    var lstMtl = oScene.Materials[0].GetAllMaterialTextures();
+                    foreach (Material mtl in oScene.Materials)
+                    {
+                        var lstMtl = mtl.GetAllMaterialTextures();
 
-                    if (lstMtl != null && lstMtl.Length > 0)
-                        tex = LoadTextureStream(string.Concat(Path.GetDirectoryName(file), "\\", lstMtl[0].FilePath));
+                        if (lstMtl != null && lstMtl.Length > 0)
+                        {
+                            tex = LoadTextureStream(string.Concat(Path.GetDirectoryName(file), "\\", lstMtl[0].FilePath));
+                            break;
+                        }
+                    }
                 }
+
+                SetUpVertices();
             }
             catch (Exception e)
             {
@@ -85,7 +95,7 @@ namespace OctGL
 
             try
             {
-                if (Path.GetExtension(filePath).ToUpper() == ".BMP")
+                if (Path.GetExtension(filePath).ToUpper() == ".BMP" && !File.Exists(filePath.ToUpper().Replace(".BMP", ".JPG")))
                 {
                     var qualityEncoder = Encoder.Quality;
                     var quality = (long)100;
@@ -106,6 +116,30 @@ namespace OctGL
                     var bmp = new Bitmap(filePath);
 
                     filePath = filePath.ToUpper().Replace(".BMP", ".JPG");
+                    bmp.Save(filePath, jpegCodecInfo, codecParams);
+                }
+
+                if (Path.GetExtension(filePath).ToUpper() == ".PNG" && !File.Exists(filePath.ToUpper().Replace(".PNG", ".JPG")))
+                {
+                    var qualityEncoder = Encoder.Quality;
+                    var quality = (long)100;
+                    var ratio = new EncoderParameter(qualityEncoder, quality);
+                    var codecParams = new EncoderParameters(1);
+                    codecParams.Param[0] = ratio;
+
+                    ImageCodecInfo jpegCodecInfo = null;
+                    var imgEnc = ImageCodecInfo.GetImageEncoders();
+                    for (int i = 0; i < imgEnc.Length; i++)
+                    {
+                        if (imgEnc[i].MimeType == "image/jpeg")
+                        {
+                            jpegCodecInfo = imgEnc[i];
+                        }
+                    }
+
+                    var bmp = new Bitmap(filePath);
+
+                    filePath = filePath.ToUpper().Replace(".PNG", ".JPG");
                     bmp.Save(filePath, jpegCodecInfo, codecParams);
                 }
 
@@ -182,6 +216,7 @@ namespace OctGL
             int count = oScene.MeshCount;
             vertexBuffers = new VertexBuffer[count];
             indexBuffers = new IndexBuffer[count];
+            textureModels = new Texture2D[count];
             VertexPositionNormalTexture[] vertices;
             short[] indices;
             Mesh mMesh;
@@ -242,9 +277,56 @@ namespace OctGL
 
                 vertexBuffers[m] = vertexBuffer;
                 indexBuffers[m] = indexBuffer;
+
+                Material mtl = oScene.Materials[mMesh.MaterialIndex];
+                if (mtl != null)
+                {
+                    var lstMtlT = mtl.GetAllMaterialTextures();
+                    if (lstMtlT != null && lstMtlT.Length > 0)
+                    {
+                        textureModels[m] = LoadTextureStream(string.Concat(Path.GetDirectoryName(file), "\\", lstMtlT[0].FilePath));
+                    }
+                }
             }
 
             verticesDrawNormals = lstVerticesDrawNormals.ToArray();
+        }
+
+        public void RenderToDevice(BasicEffect effect)
+        {
+            int count = oScene.MeshCount;
+
+            for (int m = 0; m < count; m++)
+            {
+                Mesh mMesh = oScene.Meshes[m];
+
+                device.SetVertexBuffer(vertexBuffers[m]);
+                device.Indices = indexBuffers[m];
+
+                if (textureModels[m]!=null)
+                {
+                    effect.Parameters["Texture"].SetValue(textureModels[m]);
+                }
+
+                foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+                {
+                    pass.Apply();
+                    device.DrawIndexedPrimitives(Microsoft.Xna.Framework.Graphics.PrimitiveType.TriangleList, 0, 0, indexBuffers[m].IndexCount);
+                }
+            }
+        }
+
+        public void RenderToDeviceNormals(BasicEffect effect, GraphicsDevice device)
+        {
+
+            if (verticesDrawNormals != null && verticesDrawNormals.Length > 0)
+            {
+                foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+                {
+                    pass.Apply();
+                    device.DrawUserPrimitives(Microsoft.Xna.Framework.Graphics.PrimitiveType.LineList, verticesDrawNormals, 0, verticesDrawNormals.Length / 2);
+                }
+            }
         }
 
         public void Center()
@@ -296,37 +378,6 @@ namespace OctGL
                     if (mVec.X < bb.Min.X) bb.Min.X = mVec.X;
                     if (mVec.Y < bb.Min.Y) bb.Min.Y = mVec.Y;
                     if (mVec.Z < bb.Min.Z) bb.Min.Z = mVec.Z;
-                }
-            }
-
-        }
-
-        public void RenderToDeviceNormals(BasicEffect effect, GraphicsDevice device)
-        {
-            
-            if (verticesDrawNormals != null && verticesDrawNormals.Length > 0)
-            {
-                foreach (EffectPass pass in effect.CurrentTechnique.Passes)
-                {
-                    pass.Apply();
-                    device.DrawUserPrimitives(Microsoft.Xna.Framework.Graphics.PrimitiveType.LineList, verticesDrawNormals, 0, verticesDrawNormals.Length / 2);
-                }
-            }
-            
-        }
-
-        public void RenderToDevice(BasicEffect effect)
-        {
-
-            for (int i = 0; i < vertexBuffers.Length; i++)
-            {
-                device.SetVertexBuffer(vertexBuffers[i]);
-                device.Indices = indexBuffers[i];
-
-                foreach (EffectPass pass in effect.CurrentTechnique.Passes)
-                {
-                    pass.Apply();
-                    device.DrawIndexedPrimitives(Microsoft.Xna.Framework.Graphics.PrimitiveType.TriangleList, 0, 0, indexBuffers[i].IndexCount);
                 }
             }
 
