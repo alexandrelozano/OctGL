@@ -152,6 +152,8 @@ namespace OctGL
             };
             _menuFile.Items.Add(_mnuSaveOctree);
 
+            //_menuFile.Items.Add(CreateBuildFromOperation());
+
             var _menuOptions = new MenuItem();
             _menuOptions.Id = "_menuOptions";
             _menuOptions.Text = "Options";
@@ -642,6 +644,59 @@ namespace OctGL
         {
             game.camera.rotationh = 45;
             game.camera.rotationv = 45;
+        }
+
+        public MenuItem CreateBuildFromOperation()
+        {
+            var _mnuBuildFromOperation = new MenuItem();
+            _mnuBuildFromOperation.Id = "_mnuBuildFromOperation";
+            _mnuBuildFromOperation.Text = "Build from operation...";
+            _mnuBuildFromOperation.Selected += (s, a) =>
+            {
+                var _window = new Window();
+                _window.Title = "Build from operation";
+                _window.Width = 550;
+
+                var grid = new Grid
+                {
+                    ShowGridLines = false,
+                    ColumnSpacing = 8,
+                    RowSpacing = 8,
+                    HorizontalAlignment = HorizontalAlignment.Stretch
+                };
+                _window.Content = grid;
+
+                grid.ColumnsProportions.Add(new Proportion
+                {
+                    Type = Myra.Graphics2D.UI.ProportionType.Auto,
+                });
+
+                grid.RowsProportions.Add(new Proportion());
+
+                var lblOctantTextureCoordinates = new Label();
+                lblOctantTextureCoordinates.Text = "Octant texture coordinates";
+                lblOctantTextureCoordinates.GridRow = 0;
+                lblOctantTextureCoordinates.GridColumn = 0;
+                grid.Widgets.Add(lblOctantTextureCoordinates);
+
+                var comboOperation = new ComboBox
+                {
+                    GridColumn = 1,
+                    GridRow = 0
+                };
+
+                comboOperation.Items.Add(new ListItem("Union"));
+                comboOperation.Items.Add(new ListItem("Intersection"));
+                comboOperation.Items.Add(new ListItem("Substract"));
+                comboOperation.Items.Add(new ListItem("Reverse"));
+                comboOperation.Items[0].IsSelected = true;
+                comboOperation.Width = 100;
+                grid.Widgets.Add(comboOperation);
+
+                _window.ShowModal();
+            };
+
+            return _mnuBuildFromOperation;
         }
 
         public MenuItem CreateBuildFromModel()
