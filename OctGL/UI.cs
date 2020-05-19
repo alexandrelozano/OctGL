@@ -657,6 +657,10 @@ namespace OctGL
                 _window.Title = "Build from operation";
                 _window.Width = 550;
 
+                var bttFileOctreeB = new TextButton();
+                var lblFileOctreeB = new Label();
+                var textFileOctreeB = new TextBox();
+
                 var grid = new Grid
                 {
                     ShowGridLines = false,
@@ -672,12 +676,15 @@ namespace OctGL
                 });
 
                 grid.RowsProportions.Add(new Proportion());
+                grid.RowsProportions.Add(new Proportion());
+                grid.RowsProportions.Add(new Proportion());
+                grid.RowsProportions.Add(new Proportion());
 
-                var lblOctantTextureCoordinates = new Label();
-                lblOctantTextureCoordinates.Text = "Octant texture coordinates";
-                lblOctantTextureCoordinates.GridRow = 0;
-                lblOctantTextureCoordinates.GridColumn = 0;
-                grid.Widgets.Add(lblOctantTextureCoordinates);
+                var lblOperation = new Label();
+                lblOperation.Text = "Operation";
+                lblOperation.GridRow = 0;
+                lblOperation.GridColumn = 0;
+                grid.Widgets.Add(lblOperation);
 
                 var comboOperation = new ComboBox
                 {
@@ -691,12 +698,189 @@ namespace OctGL
                 comboOperation.Items.Add(new ListItem("Reverse"));
                 comboOperation.Items[0].IsSelected = true;
                 comboOperation.Width = 100;
+                comboOperation.SelectedIndexChanged += (s1, a1) =>
+                {
+                    if (comboOperation.SelectedItem.Text == "Reverse")
+                    {
+                        lblFileOctreeB.Visible = false;
+                        textFileOctreeB.Visible = false;
+                        bttFileOctreeB.Visible = false;
+                        textFileOctreeB.Text = "";
+                    }
+                    else
+                    {
+                        bttFileOctreeB.Visible = true;
+                        lblFileOctreeB.Visible = true;
+                        textFileOctreeB.Visible = true;
+                        bttFileOctreeB.Visible = true;
+                    }
+                };
                 grid.Widgets.Add(comboOperation);
+
+                var lblFile = new Label();
+                lblFile.Text = "Octree A";
+                lblFile.GridRow = 1;
+                lblFile.GridColumn = 0;
+                grid.Widgets.Add(lblFile);
+
+                var textFileOctreeA = new TextBox();
+                textFileOctreeA.Text = "";
+                textFileOctreeA.GridRow = 1;
+                textFileOctreeA.GridColumn = 1;
+                textFileOctreeA.Width = 300;
+                grid.Widgets.Add(textFileOctreeA);
+
+                var bttFileOctreeA = new TextButton();
+                bttFileOctreeA.GridRow = 1;
+                bttFileOctreeA.GridColumn = 2;
+                bttFileOctreeA.Text = "...";
+                bttFileOctreeA.Click += (s1, a1) =>
+                {
+                    var ofd = new FileDialog(FileDialogMode.OpenFile);
+                    ofd.Filter = "*.oct";
+                    ofd.ShowModal();
+                    ofd.FilePath = Directory.GetCurrentDirectory() + "\\SampleModels\\";
+                    ofd.Closed += (s2, a2) =>
+                    {
+                        if (ofd.FilePath != "" && ofd.Result)
+                        {
+                            textFileOctreeA.Text = ofd.FilePath;
+                        }
+                    };
+                };
+                grid.Widgets.Add(bttFileOctreeA);
+
+                lblFileOctreeB.Text = "Octree B";
+                lblFileOctreeB.GridRow = 2;
+                lblFileOctreeB.GridColumn = 0;
+                grid.Widgets.Add(lblFileOctreeB);
+
+                textFileOctreeB.Text = "";
+                textFileOctreeB.GridRow = 2;
+                textFileOctreeB.GridColumn = 1;
+                textFileOctreeB.Width = 300;
+                grid.Widgets.Add(textFileOctreeB);
+
+                bttFileOctreeB.GridRow = 2;
+                bttFileOctreeB.GridColumn = 2;
+                bttFileOctreeB.Text = "...";
+                bttFileOctreeB.Click += (s1, a1) =>
+                {
+                    var ofd = new FileDialog(FileDialogMode.OpenFile);
+                    ofd.Filter = "*.oct";
+                    ofd.ShowModal();
+                    ofd.FilePath = Directory.GetCurrentDirectory() + "\\SampleModels\\";
+                    ofd.Closed += (s2, a2) =>
+                    {
+                        if (ofd.FilePath != "" && ofd.Result)
+                        {
+                            textFileOctreeB.Text = ofd.FilePath;
+                        }
+                    };
+                };
+                grid.Widgets.Add(bttFileOctreeB);
+
+                var bttBuild = new TextButton();
+                bttBuild.GridRow = 3;
+                bttBuild.GridColumn = 1;
+                bttBuild.Text = "Build";
+                bttBuild.Width = 100;
+                bttBuild.Click += (s1, a1) =>
+                {
+                    if (textFileOctreeA.Text == "")
+                    {
+                        showMessage("No octree A selected for operation " + comboOperation.SelectedItem.Text ,"Alert");
+                        return;
+                    }
+
+                    if (comboOperation.SelectedItem.Text != "Reverse" && textFileOctreeB.Text == "")
+                    {
+                        showMessage("No octree B selected for operation " + comboOperation.SelectedItem.Text, "Alert");
+                        return;
+                    }
+
+                    game.octree.startTime = DateTime.Now;
+                    game.bModel = new BModel(game.GraphicsDevice);
+                    game.octree.OpenOctree(textFileOctreeA.Text);
+
+                    switch (comboOperation.SelectedItem.Text)
+                    {
+                        case "Union":
+                            game.octree.Union(textFileOctreeB.Text);
+                            break;
+                        case "Intersection":
+                            game.octree.Intersection(textFileOctreeB.Text);
+                            break;
+                        case "Substract":
+                            game.octree.Substract(textFileOctreeB.Text);
+                            break;
+                        case "Reverse":
+                            game.octree = game.octree.Reverse();
+                            break;
+                    }
+
+                    game.octree.BuildMesh();
+                    game.camera.rotationh = 0f;
+                    game.camera.rotationv = 0f;
+                    game.camera.distance = game.octree.bb.Max.Length() * 3;
+                    game.axis.size = game.octree.bb.Max.Length();
+                    game.boundary.bb = game.octree.bb;
+
+                    _window.Close();
+                };
+                grid.Widgets.Add(bttBuild);
 
                 _window.ShowModal();
             };
 
             return _mnuBuildFromOperation;
+        }
+
+        private void showMessage(string text,string title)
+        {
+            var _window = new Window();
+            _window.Title = title;
+
+            var grid = new Grid
+            {
+                ShowGridLines = false,
+                ColumnSpacing = 8,
+                RowSpacing = 8,
+                HorizontalAlignment = HorizontalAlignment.Stretch
+            };
+            _window.Content = grid;
+
+            grid.ColumnsProportions.Add(new Proportion
+            {
+                Type = Myra.Graphics2D.UI.ProportionType.Auto
+            });
+
+            grid.RowsProportions.Add(new Proportion());
+            grid.RowsProportions.Add(new Proportion());
+
+            var label1 = new Label
+            {
+                Text = text
+            };
+            label1.GridColumn = 0;
+            label1.GridRow = 0;
+            grid.Widgets.Add(label1);
+
+            var bttClose = new TextButton();
+            bttClose.Text = "Close";
+            bttClose.Width = 100;
+            bttClose.GridColumn = 0;
+            bttClose.GridRow = 1;
+            bttClose.HorizontalAlignment = HorizontalAlignment.Center;
+            bttClose.Click += (s1, a1) =>
+            {
+                _window.Close();
+            };
+            grid.Widgets.Add(bttClose);
+
+            _window.Content = grid;
+
+            _window.ShowModal();
         }
 
         public MenuItem CreateBuildFromModel()

@@ -54,7 +54,7 @@ namespace OctGL
         public bool optimizeOctree;
         public string fillDirection;
         public Octree octree;
-        
+
         public bool showModel;
         public bool showOctree;
 
@@ -81,7 +81,7 @@ namespace OctGL
             fillDirection = "Z-";
 
             octree = new Octree(this);
-            
+
             showModel = true;
             showOctree = true;
             showModelNormals = false;
@@ -105,8 +105,8 @@ namespace OctGL
             perspectiveMatrix = Matrix.CreatePerspectiveFieldOfView(
                                MathHelper.ToRadians(45f),
                                GraphicsDevice.DisplayMode.AspectRatio,
-                               0.0001f, 10000f);
-            ortographicMatrix = Matrix.CreateOrthographic(GraphicsDevice.Viewport.Width*(float)camera.distance*0.001f, GraphicsDevice.Viewport.Height * (float)camera.distance * 0.001f, 1f, 100f);
+                               1f, 10000f);
+            ortographicMatrix = Matrix.CreateOrthographic(GraphicsDevice.Viewport.Width * (float)camera.distance * 0.001f, GraphicsDevice.Viewport.Height * (float)camera.distance * 0.001f, 1f, 100f);
 
             worldMatrix = Matrix.CreateWorld(Vector3.Zero, Vector3.Forward, Vector3.Up);
 
@@ -246,8 +246,8 @@ namespace OctGL
                 if (Keyboard.GetState().IsKeyDown(Keys.E)) ui.ClickModelShow();
                 if (Keyboard.GetState().IsKeyDown(Keys.D)) ui.ClickModelHide();
 
-                if (Keyboard.GetState().IsKeyDown(Keys.R)) ui.ClickOctreeHide();
-                if (Keyboard.GetState().IsKeyDown(Keys.F)) ui.ClickOctreeShow(); 
+                if (Keyboard.GetState().IsKeyDown(Keys.R)) ui.ClickOctreeShow();
+                if (Keyboard.GetState().IsKeyDown(Keys.F)) ui.ClickOctreeHide();
 
                 if (Keyboard.GetState().IsKeyDown(Keys.T)) ui.ClickAxisHide();
                 if (Keyboard.GetState().IsKeyDown(Keys.G)) ui.ClickAxisShow();
@@ -294,7 +294,7 @@ namespace OctGL
             GraphicsDevice.Clear(Microsoft.Xna.Framework.Color.CornflowerBlue);
 
             // TODO: Add your drawing code here
-            if (projection=="P")
+            if (projection == "P")
             {
                 basicEffect.Projection = perspectiveMatrix;
             }
@@ -307,7 +307,7 @@ namespace OctGL
 
             basicEffect.View = viewMatrix;
             basicEffect.World = worldMatrix;
-            
+
             RasterizerState rasterizerStateWF = new RasterizerState();
             rasterizerStateWF.FillMode = FillMode.WireFrame;
             rasterizerStateWF.CullMode = CullMode.None;
@@ -376,7 +376,7 @@ namespace OctGL
             ui.txtRotationV.Text = string.Format("V: {0}", camera.rotationv.ToString("000."));
             ui.txtDistance.Text = string.Format("D: {0}", camera.distance.ToString("00.00"));
             ui.txtOctreeBuild.Text = string.Format("Octants: {0} of {1}", octree.octants, octree.octantsMax);
-            if (octree.buildingStage=="Texture coordinates...")
+            if (octree.buildingStage == "Texture coordinates...")
             {
                 ui.txtOctreeBuildInfo.Text = string.Format("Texture coordinates: {0} of {1}", octree.textureCoordinates, octree.textureCoordinatesMax);
             }

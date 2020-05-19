@@ -33,7 +33,7 @@ namespace OctGL
 
         public String Load(string file)
         {
-            string result  = "";
+            string result = "";
 
             this.file = file;
             bb.Max = Vector3.Zero;
@@ -89,7 +89,7 @@ namespace OctGL
 
             try
             {
-                if (Path.GetExtension(filePath).ToUpper() == ".BMP" && !File.Exists(filePath.ToUpper().Replace(".BMP", ".JPG")))
+                if (Path.GetExtension(filePath).ToUpper() == ".BMP")
                 {
                     var qualityEncoder = Encoder.Quality;
                     var quality = (long)100;
@@ -113,7 +113,7 @@ namespace OctGL
                     bmp.Save(filePath, jpegCodecInfo, codecParams);
                 }
 
-                if (Path.GetExtension(filePath).ToUpper() == ".PNG" && !File.Exists(filePath.ToUpper().Replace(".PNG", ".JPG")))
+                if (Path.GetExtension(filePath).ToUpper() == ".PNG")
                 {
                     var qualityEncoder = Encoder.Quality;
                     var quality = (long)100;
@@ -142,7 +142,7 @@ namespace OctGL
                     file = Texture2D.FromStream(device, titleStream);
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 throw new System.IO.FileLoadException("Cannot load '" + filePath + "' file! " + e.Message);
             }
@@ -229,7 +229,7 @@ namespace OctGL
                 vertices = new VertexPositionNormalTexture[mMesh.VertexCount];
                 indices = new short[mMesh.FaceCount * 3];
 
-                for (int v = 0; v< mMesh.VertexCount; v++)
+                for (int v = 0; v < mMesh.VertexCount; v++)
                 {
                     var mVec = mMesh.Vertices[v];
                     var mNor = mMesh.Normals[v];
@@ -237,10 +237,10 @@ namespace OctGL
 
                     if (mMesh.HasTextureCoords(0))
                     {
-                        mTex = new Vector2(mMesh.TextureCoordinateChannels[0][v].X, mMesh.TextureCoordinateChannels[0][v].Y) ;
+                        mTex = new Vector2(mMesh.TextureCoordinateChannels[0][v].X, mMesh.TextureCoordinateChannels[0][v].Y);
                     }
 
-                    vertices[v] = new VertexPositionNormalTexture(new Vector3(mVec.X, mVec.Y, mVec.Z), 
+                    vertices[v] = new VertexPositionNormalTexture(new Vector3(mVec.X, mVec.Y, mVec.Z),
                         new Vector3(mNor.X, mNor.Y, mNor.Z), mTex);
 
                     Arrow arrow = new Arrow(new Vector3(mVec.X, mVec.Y, mVec.Z), new Vector3(mNor.X, mNor.Y, mNor.Z), normal_length, Microsoft.Xna.Framework.Color.White);
@@ -263,10 +263,10 @@ namespace OctGL
                     indices[i + 1] = (short)mFace.Indices[1];
                     indices[i + 2] = (short)mFace.Indices[2];
                 }
-                
+
                 var vertexBuffer = new VertexBuffer(device, VertexPositionNormalTexture.VertexDeclaration, vertices.Length, BufferUsage.WriteOnly);
                 vertexBuffer.SetData(vertices);
-                
+
                 var indexBuffer = new IndexBuffer(device, typeof(short), indices.Length, BufferUsage.None);
                 indexBuffer.SetData(indices);
 
@@ -343,7 +343,7 @@ namespace OctGL
 
         public void RenderToDeviceNormals(BasicEffect effect, GraphicsDevice device)
         {
-            
+
             if (verticesDrawNormals != null && verticesDrawNormals.Length > 0)
             {
                 foreach (EffectPass pass in effect.CurrentTechnique.Passes)
@@ -352,7 +352,7 @@ namespace OctGL
                     device.DrawUserPrimitives(Microsoft.Xna.Framework.Graphics.PrimitiveType.LineList, verticesDrawNormals, 0, verticesDrawNormals.Length / 2);
                 }
             }
-            
+
         }
 
         public void RenderToDevice(BasicEffect effect)

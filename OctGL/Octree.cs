@@ -171,6 +171,48 @@ namespace OctGL
             System.IO.File.WriteAllText(filePath, serialization);
         }
 
+        public void Union(string filePath)
+        {
+
+        }
+
+        public void Intersection(string filePath)
+        {
+
+        }
+
+        public void Substract(string filePath)
+        {
+
+        }
+
+        public Octree Reverse()
+        {
+            Octree result = new Octree(game);
+
+            result.root = result;
+            result.bb = bb;
+            switch (state)
+            {
+                case OctreeStates.Full:
+                    result.state = OctreeStates.Empty;
+                    break;
+                case OctreeStates.Empty:
+                    result.state = OctreeStates.Full;
+                    break;
+                case OctreeStates.Mixted:
+                    result.state = OctreeStates.Mixted;
+                    result.CreateChilds(bb);
+                    for (int c=0; c<8; c++)
+                    {
+                        result.childs[c] = result.childs[c].Reverse();
+                    }
+                    break;
+            }
+
+            return result;
+        }
+
         public void Optimize()
         {
             buildingStage = "Optimizing...";
