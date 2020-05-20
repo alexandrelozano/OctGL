@@ -96,10 +96,18 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Octree.ico" />
+    <Content Include="Resources\cylinder.png" />
+    <Content Include="Resources\cylinder_piece2_substract.png" />
+    <Content Include="Resources\cylinder_pyramid_intersection.png" />
+    <Content Include="Resources\cylinder_pyramid_union.png" />
     <Content Include="Resources\demo.gif" />
+    <Content Include="Resources\piece2.png" />
+    <Content Include="Resources\pyramid.png" />
     <Content Include="Resources\SampleLevels.jpg" />
     <Content Include="Resources\samplepiece2wf.jpg" />
     <Content Include="Resources\samplespherenormals.jpg" />
+    <Content Include="Resources\sphere.png" />
+    <Content Include="Resources\sphere_reverse.png" />
     <Content Include="SampleModels\Dragon\dragon.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

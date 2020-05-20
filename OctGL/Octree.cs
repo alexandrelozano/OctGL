@@ -171,48 +171,6 @@ namespace OctGL
             System.IO.File.WriteAllText(filePath, serialization);
         }
 
-        public void Union(string filePath)
-        {
-
-        }
-
-        public void Intersection(string filePath)
-        {
-
-        }
-
-        public void Substract(string filePath)
-        {
-
-        }
-
-        public Octree Reverse()
-        {
-            Octree result = new Octree(game);
-
-            result.root = result;
-            result.bb = bb;
-            switch (state)
-            {
-                case OctreeStates.Full:
-                    result.state = OctreeStates.Empty;
-                    break;
-                case OctreeStates.Empty:
-                    result.state = OctreeStates.Full;
-                    break;
-                case OctreeStates.Mixted:
-                    result.state = OctreeStates.Mixted;
-                    result.CreateChilds(bb);
-                    for (int c=0; c<8; c++)
-                    {
-                        result.childs[c] = result.childs[c].Reverse();
-                    }
-                    break;
-            }
-
-            return result;
-        }
-
         public void Optimize()
         {
             buildingStage = "Optimizing...";
@@ -1298,6 +1256,190 @@ namespace OctGL
                 }
                 else return tmp;
             }
+        }
+
+        #endregion
+
+        #region Operations
+
+        public Octree Intersection(Octree B)
+        {
+            return Intersection(this, B);
+        }
+
+        protected Octree Intersection(Octree A, Octree B)
+        {
+            Octree result = new Octree(game);
+            result.root = A.root;
+            result.bb = A.bb;
+            result.level = A.level;
+            result.parent = A.parent;
+
+            if (A.state == OctreeStates.Full && B.state == OctreeStates.Full)
+            {
+                result.state = OctreeStates.Full;
+            }else if (A.state == OctreeStates.Mixted && B.state == OctreeStates.Mixted)
+            {
+                result.state = OctreeStates.Mixted;
+                result.CreateChilds(A.bb);
+                for (int c = 0; c < 8; c++)
+                {
+                    result.childs[c] = result.childs[c].Intersection(A.childs[c], B.childs[c]);
+                }
+            }else if (A.state == OctreeStates.Full && B.state == OctreeStates.Mixted)
+            {
+                result.state = OctreeStates.Mixted;
+                result.CreateChilds(A.bb);
+                for (int c = 0; c < 8; c++)
+                {
+                    result.childs[c] = result.childs[c].Intersection(B.childs[c], B.childs[c]);
+                }
+            }
+            else if (B.state == OctreeStates.Full && A.state == OctreeStates.Mixted)
+            {
+                result.state = OctreeStates.Mixted;
+                result.CreateChilds(A.bb);
+                for (int c = 0; c < 8; c++)
+                {
+                    result.childs[c] = result.childs[c].Intersection(A.childs[c], A.childs[c]);
+                }
+            }
+
+            return result;
+        }
+
+        public Octree Substract(Octree B)
+        {
+            return Substract(this, B);
+        }
+
+        protected Octree Substract(Octree A, Octree B)
+        {
+            Octree result = new Octree(game);
+            result.root = A.root;
+            result.bb = A.bb;
+            result.level = A.level;
+            result.parent = A.parent;
+
+            if (A.state == OctreeStates.Empty)
+            {
+                result.state = OctreeStates.Empty;
+            }else if(B.state == OctreeStates.Full)
+            {
+                result.state = OctreeStates.Empty;
+            }else if(A.state == OctreeStates.Full && B.state == OctreeStates.Empty)
+            {
+                result.state = OctreeStates.Full;
+            }else if(A.state == OctreeStates.Mixted && B.state == OctreeStates.Mixted)
+            {
+                result.state = OctreeStates.Mixted;
+                result.CreateChilds(A.bb);
+                for (int c = 0; c < 8; c++)
+                {
+                    result.childs[c] = result.childs[c].Substract(A.childs[c], B.childs[c]);
+                }
+            }else if(A.state == OctreeStates.Mixted && B.state == OctreeStates.Empty)
+            {
+                result = A.Union(A);
+            }
+            else if (A.state == OctreeStates.Full && B.state == OctreeStates.Mixted)
+            {
+                result = B.Reverse();
+            }
+
+            return result;
+        }
+
+        public Octree Union(Octree B)
+        {
+            return Union(this, B);
+        }
+
+        protected Octree Union(Octree A, Octree B)
+        {
+            Octree result = new Octree(game);
+            result.root = A.root;
+            result.bb = A.bb;
+            result.level = A.level;
+            result.parent = A.parent;
+
+            if (A.state == OctreeStates.Full)
+            {
+                result.state = OctreeStates.Full;
+            }
+            else if (B.state == OctreeStates.Full)
+            {
+                result.state = OctreeStates.Full;
+            }
+            else if (A.state == OctreeStates.Mixted)
+            {
+                result.state = OctreeStates.Mixted;
+                result.CreateChilds(A.bb);
+                for (int c = 0; c < 8; c++)
+                {
+                    if (B.state == OctreeStates.Empty)
+                    {
+                        result.childs[c] = result.childs[c].Union(A.childs[c], B);
+                    }
+                    else
+                    {
+                        result.childs[c] = result.childs[c].Union(A.childs[c], B.childs[c]);
+                    }
+                }
+
+            }
+            else if (B.state == OctreeStates.Mixted)
+            {
+                result.state = OctreeStates.Mixted;
+                result.CreateChilds(B.bb);
+                for (int c = 0; c < 8; c++)
+                {
+                    if (A.state == OctreeStates.Empty)
+                    {
+                        result.childs[c] = result.childs[c].Union(A, B.childs[c]);
+                    }
+                    else
+                    {
+                        result.childs[c] = result.childs[c].Union(A.childs[c], B.childs[c]);
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        public Octree Reverse()
+        {
+            return Reverse(this);
+        }
+
+        protected Octree Reverse(Octree A)
+        {
+            Octree result = new Octree(game);
+            result.root = A.root;
+            result.bb = A.bb;
+            result.level = A.level;
+            result.parent = A.parent;
+
+            switch (A.state)
+            {
+                case OctreeStates.Full:
+                    result.state = OctreeStates.Empty;
+                    break;
+                case OctreeStates.Empty:
+                    result.state = OctreeStates.Full;
+                    break;
+                case OctreeStates.Mixted:
+                    result.state = OctreeStates.Mixted;
+                    result.CreateChilds(A.bb);
+                    for (int c = 0; c < 8; c++)
+                    {
+                        result.childs[c] = result.childs[c].Reverse(A.childs[c]);
+                    }
+                    break;
+            }
+
+            return result;
         }
 
         #endregion

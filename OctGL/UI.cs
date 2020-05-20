@@ -152,7 +152,7 @@ namespace OctGL
             };
             _menuFile.Items.Add(_mnuSaveOctree);
 
-            //_menuFile.Items.Add(CreateBuildFromOperation());
+            _menuFile.Items.Add(CreateBuildFromOperation());
 
             var _menuOptions = new MenuItem();
             _menuOptions.Id = "_menuOptions";
@@ -799,23 +799,26 @@ namespace OctGL
                         return;
                     }
 
-                    game.octree.startTime = DateTime.Now;
-                    game.bModel = new BModel(game.GraphicsDevice);
-                    game.octree.OpenOctree(textFileOctreeA.Text);
+                    Octree A = new Octree(game);
+                    A.OpenOctree(textFileOctreeA.Text);
+                    Octree B = new Octree(game);
 
                     switch (comboOperation.SelectedItem.Text)
                     {
                         case "Union":
-                            game.octree.Union(textFileOctreeB.Text);
+                            B.OpenOctree(textFileOctreeB.Text);
+                            game.octree = A.Union(B);
                             break;
                         case "Intersection":
-                            game.octree.Intersection(textFileOctreeB.Text);
+                            B.OpenOctree(textFileOctreeB.Text);
+                            game.octree = A.Intersection(B);
                             break;
                         case "Substract":
-                            game.octree.Substract(textFileOctreeB.Text);
+                            B.OpenOctree(textFileOctreeB.Text);
+                            game.octree = A.Substract(B);
                             break;
                         case "Reverse":
-                            game.octree = game.octree.Reverse();
+                            game.octree = A.Reverse();
                             break;
                     }
 
