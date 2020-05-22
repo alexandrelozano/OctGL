@@ -100,12 +100,20 @@ namespace OctGL
             Octree current = this;
             Stack<Octree> st = new Stack<Octree>();
 
-            BoundingBox bb = new BoundingBox(new Vector3(-5f, -5f, -5f), new Vector3(5f, 5f, 5f));
+            System.IO.StreamReader file = new System.IO.StreamReader(filePath);
+
+            serialization = file.ReadLine();
+            String[] pointsMax = serialization.Split('#');
+            serialization = file.ReadLine();
+            String[] pointsMin = serialization.Split('#');
+
+            BoundingBox bb = new BoundingBox(new Vector3(float.Parse(pointsMin[0]), float.Parse(pointsMin[1]), float.Parse(pointsMin[2])), new Vector3(float.Parse(pointsMax[0]), float.Parse(pointsMax[1]), float.Parse(pointsMax[2])));
+
+            serialization = file.ReadLine();
+
             current.bb = bb;
             current.root = this;
             st.Push(current);
-
-            serialization = System.IO.File.ReadAllText(filePath);
 
             while (i < serialization.Length)
             {
@@ -132,6 +140,8 @@ namespace OctGL
                 i++;
                 current = st.Pop();
             }
+
+            file.Close();
         }
 
 
@@ -140,6 +150,9 @@ namespace OctGL
             Stack<Octree> st = new Stack<Octree>();
             Octree current = this;
             String serialization = "";
+
+            serialization = current.bb.Max.X + "#" + current.bb.Max.Y + "#" + current.bb.Max.Z + "\r\n";
+            serialization += current.bb.Min.X + "#" + current.bb.Min.Y + "#" + current.bb.Min.Z + "\r\n";
 
             st.Push(current);
             while (st.Count > 0)
