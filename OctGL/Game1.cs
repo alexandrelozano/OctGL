@@ -270,6 +270,8 @@ namespace OctGL
                 if (Keyboard.GetState().IsKeyDown(Keys.D4)) ui.ClickXZ();
                 if (Keyboard.GetState().IsKeyDown(Keys.D5)) ui.ClickXYZ();
 
+                //if (Keyboard.GetState().IsKeyDown(Keys.OemMinus)) octree = octree.Reverse();
+
                 viewMatrix = camera.ViewMatrix();
             }
 
