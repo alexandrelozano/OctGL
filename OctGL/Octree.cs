@@ -54,6 +54,8 @@ namespace OctGL
         public double octants;
         public double octantsMax;
         public double octantsFilled;
+        public double volume;
+        public double area;
 
         public string buildingStage;
 
@@ -279,6 +281,85 @@ namespace OctGL
                 else if (current.state == OctreeStates.Full)
                 {
                     octantsFilled++;
+                }
+            }
+        }
+
+        public void CalculateProperties()
+        {
+            Stack<Octree> st = new Stack<Octree>();
+            Octree current = this;
+            Octree nZplus = null;
+            Octree nZminus = null;
+            Octree nYplus = null;
+            Octree nYminus = null;
+            Octree nXplus = null;
+            Octree nXminus = null;
+
+            area = 0;
+            volume = 0;
+            octantsFilled = 0;
+
+            st.Push(current);
+            while (st.Count > 0)
+            {
+                current = st.Pop();
+
+                if (current.state == OctreeStates.Mixted)
+                {
+                    if (current.childs != null)
+                    {
+                        for (short i = 0; i < 8; i++)
+                        {
+                            st.Push(current.childs[i]);
+                        }
+                    }
+                }
+                else if (current.state == OctreeStates.Full)
+                {
+                    octantsFilled += 1;
+
+                    Double a = current.bb.Max.X - current.bb.Min.X;
+                    Double b = current.bb.Max.Y - current.bb.Min.Y;
+                    Double c = current.bb.Max.Z - current.bb.Min.Z;
+
+                    volume += a * b * c;
+
+                    var tasks = new Task[6]
+                        {
+                        Task.Factory.StartNew(() => {nZplus = current.FindNeighborZPlus(); }),
+                        Task.Factory.StartNew(() => {nZminus = current.FindNeighborZMinus(); }),
+                        Task.Factory.StartNew(() => {nYplus = current.FindNeighborYPlus(); }),
+                        Task.Factory.StartNew(() => {nYminus = current.FindNeighborYMinus(); }),
+                        Task.Factory.StartNew(() => {nXplus = current.FindNeighborXPlus(); }),
+                        Task.Factory.StartNew(() => {nXminus = current.FindNeighborXMinus(); })
+                        };
+                    Task.WaitAll(tasks);
+
+                    if (nZplus == null || nZplus.state==OctreeStates.Empty)
+                    {
+                        area += (current.bb.Max.X - current.bb.Min.X) * (current.bb.Max.Y - current.bb.Min.Y);
+                    }
+                    if (nZminus == null || nZminus.state == OctreeStates.Empty)
+                    {
+                        area += (current.bb.Max.X - current.bb.Min.X) * (current.bb.Max.Y - current.bb.Min.Y);
+                    }
+                    if (nYplus == null || nYplus.state == OctreeStates.Empty)
+                    {
+                        area += (current.bb.Max.X - current.bb.Min.X) * (current.bb.Max.Z - current.bb.Min.Z);
+                    }
+                    if (nYminus == null || nYminus.state == OctreeStates.Empty)
+                    {
+                        area += (current.bb.Max.X - current.bb.Min.X) * (current.bb.Max.Z - current.bb.Min.Z);
+                    }
+                    if (nXplus == null || nXplus.state == OctreeStates.Empty)
+                    {
+                        area += (current.bb.Max.Z - current.bb.Min.Z) * (current.bb.Max.Y - current.bb.Min.Y);
+                    }
+                    if (nXminus == null || nXminus.state == OctreeStates.Empty)
+                    {
+                        area += (current.bb.Max.Z - current.bb.Min.Z) * (current.bb.Max.Y - current.bb.Min.Y);
+                    }
                 }
             }
         }

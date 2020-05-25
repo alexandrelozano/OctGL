@@ -1170,29 +1170,45 @@ namespace OctGL
                 grid.RowsProportions.Add(new Proportion());
                 grid.RowsProportions.Add(new Proportion());
                 grid.RowsProportions.Add(new Proportion());
+                grid.RowsProportions.Add(new Proportion());
+                grid.RowsProportions.Add(new Proportion());
 
                 // Add widgets
+                game.octree.CalculateProperties();
+
+                var lblArea = new Label();
+                lblArea.Text = string.Format("Area: {0}", game.octree.area.ToString("000.00"));
+                lblArea.GridRow = 0;
+                lblArea.GridColumn = 0;
+                grid.Widgets.Add(lblArea);
+
+                var lblVolume = new Label();
+                lblVolume.Text = string.Format("Volume: {0}", game.octree.volume.ToString("000.00"));
+                lblVolume.GridRow = 1;
+                lblVolume.GridColumn = 0;
+                grid.Widgets.Add(lblVolume);
+
                 var lblFilledOctants = new Label();
                 lblFilledOctants.Text = string.Format("Filled octants: {0}", game.octree.octantsFilled);
-                lblFilledOctants.GridRow = 0;
+                lblFilledOctants.GridRow = 2;
                 lblFilledOctants.GridColumn = 0;
                 grid.Widgets.Add(lblFilledOctants);
 
                 var lblVertices = new Label();
-                lblVertices.Text = string.Format("Vertices: {0}", game.bModel.totalVertices());
-                lblVertices.GridRow = 1;
+                lblVertices.Text = string.Format("Vertices: {0}", game.octree.verticesNumber);
+                lblVertices.GridRow = 3;
                 lblVertices.GridColumn = 0;
                 grid.Widgets.Add(lblVertices);
 
                 var lblFaces = new Label();
-                lblFaces.Text = string.Format("Faces: {0}", game.bModel.totalFaces());
-                lblFaces.GridRow = 2;
+                lblFaces.Text = string.Format("Faces: {0}", game.octree.verticesNumber / 3);
+                lblFaces.GridRow = 4;
                 lblFaces.GridColumn = 0;
                 grid.Widgets.Add(lblFaces);
 
                 var lblSize = new Label();
-                lblSize.Text = string.Format("Size: <{0},{1},{2}>", (game.bModel.bb.Max.X - game.bModel.bb.Min.X).ToString("00.00").Replace(",", "."), (game.bModel.bb.Max.Y - game.bModel.bb.Min.Y).ToString("00.00").Replace(",", "."), (game.bModel.bb.Max.Z - game.bModel.bb.Min.Z).ToString("00.00").Replace(",", "."));
-                lblSize.GridRow = 3;
+                lblSize.Text = string.Format("Size: <{0},{1},{2}>", (game.octree.bb.Max.X - game.octree.bb.Min.X).ToString("00.00").Replace(",", "."), (game.octree.bb.Max.Y - game.octree.bb.Min.Y).ToString("00.00").Replace(",", "."), (game.octree.bb.Max.Z - game.octree.bb.Min.Z).ToString("00.00").Replace(",", "."));
+                lblSize.GridRow = 5;
                 lblSize.GridColumn = 0;
                 grid.Widgets.Add(lblSize);
 
