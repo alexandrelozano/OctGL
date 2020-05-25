@@ -37,6 +37,7 @@ namespace OctGL
         public Octree root;
         public short position;
         public bool faceUP;
+        public bool fillingOctant;
         public string id;
 
         public BoundingBox bb;
@@ -309,42 +310,58 @@ namespace OctGL
                     if (current.faceUP)
                     {
                         Octree neighborDown = null;
-                        switch (root.fillDirection)
+
+                        List<Octree> lstFillOctants = new List<Octree>();
+                        neighborDown = current.FindNeighborDown();
+                        while (neighborDown != null && neighborDown.faceUP)
                         {
-                            case "Z-":
-                                neighborDown = current.FindNeighborZMinusEqualSize();
-                                break;
-                            case "Z+":
-                                neighborDown = current.FindNeighborZPlusEqualSize();
-                                break;
-                            case "X-":
-                                neighborDown = current.FindNeighborXMinusEqualSize();
-                                break;
-                            case "X+":
-                                neighborDown = current.FindNeighborXPlusEqualSize();
-                                break;
-                            case "Y-":
-                                neighborDown = current.FindNeighborYMinusEqualSize();
-                                break;
-                            case "Y+":
-                                neighborDown = current.FindNeighborYPlusEqualSize();
-                                break;
+                            lstFillOctants.Add(neighborDown);
+                            neighborDown = neighborDown.FindNeighborDown();
                         }
 
-                        if (neighborDown != null && neighborDown.faceUP)
+                        // Set empty all new octants if we arrive at octree outer space
+                        if (neighborDown == null)
                         {
-                            neighborDown.state = OctreeStates.Full;
-                            neighborDown.textureCoord = new Vector2[8];
-                            neighborDown.faceUP = current.faceUP;
-                            for (int i = 0; i < 8; i++)
+                            foreach (Octree octant in lstFillOctants)
                             {
-                                neighborDown.textureCoord[i] = current.textureCoord[i];
+                                if (octant.fillingOctant == true)
+                                {
+                                    octant.state = OctreeStates.Empty;
+                                }
                             }
-                            st.Push(neighborDown);
                         }
                     }
                 }
             }
+        }
+
+        public Octree FindNeighborDown()
+        {
+            Octree neighborDown=null;
+
+            switch (root.fillDirection)
+            {
+                case "Z-":
+                    neighborDown = FindNeighborZPlusEqualSize();
+                    break;
+                case "Z+":
+                    neighborDown = FindNeighborZPlusEqualSize();
+                    break;
+                case "X-":
+                    neighborDown = FindNeighborXMinusEqualSize();
+                    break;
+                case "X+":
+                    neighborDown = FindNeighborXPlusEqualSize();
+                    break;
+                case "Y-":
+                    neighborDown = FindNeighborYMinusEqualSize();
+                    break;
+                case "Y+":
+                    neighborDown = FindNeighborYPlusEqualSize();
+                    break;
+            }
+
+            return neighborDown;
         }
 
         public void BuildTextureCoordinates()
@@ -735,6 +752,7 @@ namespace OctGL
                 childs[i].faceUP = true;
                 childs[i].textureCoord = new Vector2[8];
                 childs[i].id = this.id + i.ToString();
+                childs[i].fillingOctant = false;
             }
 
             childs[NodePositions.xyz].bb.Min.X = bb.Min.X;
@@ -901,6 +919,7 @@ namespace OctGL
                         for (int i = 0; i < 8; i++)
                         {
                             tmp.childs[i].state = OctreeStates.Empty;
+                            tmp.childs[i].fillingOctant = true;
                         }
                     }
                     else if (tmp.state == OctreeStates.Full)
