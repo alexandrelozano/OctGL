@@ -378,21 +378,23 @@ namespace OctGL
             {
                 Mesh mMesh = oScene.Meshes[m];
 
-                device.SetVertexBuffer(vertexBuffers[m]);
-                device.Indices = indexBuffers[m];
-
-                if (textureModels[m] != null)
+                if (indexBuffers[m] != null)
                 {
-                    effect.Parameters["Texture"].SetValue(textureModels[m]);
-                }
+                    device.SetVertexBuffer(vertexBuffers[m]);
+                    device.Indices = indexBuffers[m];
 
-                foreach (EffectPass pass in effect.CurrentTechnique.Passes)
-                {
-                    pass.Apply();
-                    device.DrawIndexedPrimitives(Microsoft.Xna.Framework.Graphics.PrimitiveType.TriangleList, 0, 0, indexBuffers[m].IndexCount);
+                    if (textureModels[m] != null)
+                    {
+                        effect.Parameters["Texture"].SetValue(textureModels[m]);
+                    }
+
+                    foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+                    {
+                        pass.Apply();
+                        device.DrawIndexedPrimitives(Microsoft.Xna.Framework.Graphics.PrimitiveType.TriangleList, 0, 0, indexBuffers[m].IndexCount);
+                    }
                 }
             }
-
         }
 
         public long totalVertices()

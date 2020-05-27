@@ -802,7 +802,7 @@ namespace OctGL
                 var coord = new Barycentric(closestT0, closestT1, closestT2, closestPoint);
                 Vector2 res = coord.Interpolate(textCoordT0, textCoordT1, textCoordT2);
                 
-                if (tex != null)
+                if (tex != null && res.X != float.NaN && res.Y != float.NaN)
                 {
                     return BModel.GetPixel(texData, (int)(tex.Width * System.Math.Abs(res.X % 1.0)), (int)(tex.Height * System.Math.Abs(res.Y % 1.0)), tex.Width);
                 }
