@@ -956,33 +956,20 @@ namespace OctGL
                 grid.Widgets.Add(depth);
 
                 var lblOctantTextureCoordinates = new Label();
-                lblOctantTextureCoordinates.Text = "Octant texture coordinates";
+                lblOctantTextureCoordinates.Text = "Calculate color";
                 lblOctantTextureCoordinates.GridRow = 1;
                 lblOctantTextureCoordinates.GridColumn = 0;
                 grid.Widgets.Add(lblOctantTextureCoordinates);
 
-                var comboTextureCoodinates = new ComboBox
+                var chkCalculateColor = new CheckBox();
+                chkCalculateColor.GridRow = 1;
+                chkCalculateColor.GridColumn = 1;
+                chkCalculateColor.IsPressed = game.optimizeOctree;
+                chkCalculateColor.Click += (s1, a1) =>
                 {
-                    GridColumn = 1,
-                    GridRow = 1
+                    game.calculatecolor = chkCalculateColor.IsPressed;
                 };
-
-                comboTextureCoodinates.Items.Add(new ListItem("0"));
-                comboTextureCoodinates.Items.Add(new ListItem("1"));
-                comboTextureCoodinates.Items.Add(new ListItem("8"));
-                for (int i = 0; i < comboTextureCoodinates.Items.Count; i++)
-                {
-                    if (comboTextureCoodinates.Items[i].Text == game.octantTextureCoordinates.ToString())
-                    {
-                        comboTextureCoodinates.Items[i].IsSelected = true;
-                    }
-                }
-                comboTextureCoodinates.SelectedIndexChanged += (s1, a1) =>
-                {
-                    game.octantTextureCoordinates = short.Parse(comboTextureCoodinates.SelectedItem.Text);
-                };
-                comboTextureCoodinates.Width = 50;
-                grid.Widgets.Add(comboTextureCoodinates);
+                grid.Widgets.Add(chkCalculateColor);
 
                 var lblFillObject = new Label();
                 lblFillObject.Text = "Fill object direction";
@@ -1014,7 +1001,7 @@ namespace OctGL
                 {
                     game.fillDirection = comboFillDirection.SelectedItem.Text;
                 };
-                comboFillDirection.Width = 50;
+                comboFillDirection.Width = 80;
                 grid.Widgets.Add(comboFillDirection);
 
                 var lblOptimizeOctree = new Label();
@@ -1102,15 +1089,13 @@ namespace OctGL
                         if (game.bModel.tex != null)
                         {
                             game.textureModel = game.bModel.tex;
-                            game.textureOctree = game.bModel.tex;
                         }
                         else
                         {
                             game.textureModel = game.textureModelDefault;
-                            game.textureOctree = game.textureOctreeDefault;
                         }
 
-                        game.octree = new Octree(game, game.octreeDepth, game.octantTextureCoordinates, game.optimizeOctantFaces, game.fillDirection);
+                        game.octree = new Octree(game, game.octreeDepth, game.calculatecolor, game.optimizeOctantFaces, game.fillDirection);
 
                         new Thread(() =>
                         {

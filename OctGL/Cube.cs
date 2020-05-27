@@ -7,27 +7,17 @@ namespace OctGL
     public class Cube
     {
         BoundingBox bb;
-        Vector2[] textureCoord;
         Vector3 size;
         Color color;
 
-        public Cube(BoundingBox bb, Vector2[] textureCoord, Color color)
+        public Cube(BoundingBox bb, Color color)
         {
             this.bb = bb;
-            
-            if (textureCoord == null)
-            {
-                this.textureCoord = new Vector2[8];
-            }else
-            {
-                this.textureCoord = textureCoord;
-            }
-
             this.color = color;
             size = new Vector3((bb.Max.X - bb.Min.X) * 0.5f, (bb.Max.Y - bb.Min.Y) * 0.5f, (bb.Max.Z - bb.Min.Z) * 0.5f);
         }
 
-        public void AddVertices(List<VertexPositionNormalTexture> lstVertexTriMesh, List<VertexPositionColor> lstVertexQuadMesh, bool ZFace, bool zFace, bool YFace, bool yFace, bool XFace, bool xFace)
+        public void AddVertices(List<VertexPositionNormalTexture> lstVertexTriMesh, List<VertexPositionColorNormal> lstVertexTriColorMesh, List<VertexPositionColor> lstVertexQuadMesh, bool ZFace, bool zFace, bool YFace, bool yFace, bool XFace, bool xFace)
         {
             Vector3 vxYz = new Vector3(bb.Min.X, bb.Max.Y, bb.Min.Z);
             Vector3 vxYZ = new Vector3(bb.Min.X, bb.Max.Y, bb.Max.Z);
@@ -42,26 +32,25 @@ namespace OctGL
             {
                 Vector3 normalFront = new Vector3(0.0f, 0.0f, 1.0f) * size;
 
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vxYz, normalFront, textureCoord[Octree.NodePositions.xYz]));
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vxyz, normalFront, textureCoord[Octree.NodePositions.xyz]));
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vXYz, normalFront, textureCoord[Octree.NodePositions.XYz]));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vxYz, color, normalFront));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vxyz, color, normalFront));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vXYz, color, normalFront));
 
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vxyz, normalFront, textureCoord[Octree.NodePositions.xyz]));
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vXyz, normalFront, textureCoord[Octree.NodePositions.Xyz]));
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vXYz, normalFront, textureCoord[Octree.NodePositions.XYz]));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vxyz, color, normalFront));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vXyz, color, normalFront));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vXYz, color, normalFront));
 
-                lstVertexQuadMesh.Add(new VertexPositionColor(vxyz, color));
-                lstVertexQuadMesh.Add(new VertexPositionColor(vxYz, color));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vxyz, Color.White));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vxYz, Color.White));
 
-                lstVertexQuadMesh.Add(new VertexPositionColor(vxyz, color));
-                lstVertexQuadMesh.Add(new VertexPositionColor(vXyz, color));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vxyz, Color.White));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vXyz, Color.White));
 
-                lstVertexQuadMesh.Add(new VertexPositionColor(vXyz, color));
-                lstVertexQuadMesh.Add(new VertexPositionColor(vXYz, color));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vXyz, Color.White));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vXYz, Color.White));
 
-
-                lstVertexQuadMesh.Add(new VertexPositionColor(vxYz, color));
-                lstVertexQuadMesh.Add(new VertexPositionColor(vXYz, color));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vxYz, Color.White));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vXYz, Color.White));
 
             }
 
@@ -69,126 +58,125 @@ namespace OctGL
             {
                 Vector3 normalBack = new Vector3(0.0f, 0.0f, -1.0f) * size;
 
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vxYZ, normalBack, textureCoord[Octree.NodePositions.xYZ]));
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vXYZ, normalBack, textureCoord[Octree.NodePositions.XYZ]));
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vxyZ, normalBack, textureCoord[Octree.NodePositions.xyZ]));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vxYZ, color, normalBack));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vXYZ, color, normalBack));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vxyZ, color, normalBack));
 
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vxyZ, normalBack, textureCoord[Octree.NodePositions.xyZ]));
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vXYZ, normalBack, textureCoord[Octree.NodePositions.XYZ]));
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vXyZ, normalBack, textureCoord[Octree.NodePositions.XyZ]));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vxyZ, color, normalBack));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vXYZ, color, normalBack));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vXyZ, color, normalBack));
 
-                lstVertexQuadMesh.Add(new VertexPositionColor(vxyZ, color));
-                lstVertexQuadMesh.Add(new VertexPositionColor(vxYZ, color));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vxyZ, Color.White));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vxYZ, Color.White));
 
-                lstVertexQuadMesh.Add(new VertexPositionColor(vxyZ, color));
-                lstVertexQuadMesh.Add(new VertexPositionColor(vXyZ, color));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vxyZ, Color.White));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vXyZ, Color.White));
 
-                lstVertexQuadMesh.Add(new VertexPositionColor(vXyZ, color));
-                lstVertexQuadMesh.Add(new VertexPositionColor(vXYZ, color));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vXyZ, Color.White));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vXYZ, Color.White));
 
-
-                lstVertexQuadMesh.Add(new VertexPositionColor(vxYZ, color));
-                lstVertexQuadMesh.Add(new VertexPositionColor(vXYZ, color));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vxYZ, Color.White));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vXYZ, Color.White));
             }
 
             if (YFace)
             {
                 Vector3 normalTop = new Vector3(0.0f, 1.0f, 0.0f) * size;
 
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vxYz, normalTop, textureCoord[Octree.NodePositions.xYz]));
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vXYZ, normalTop, textureCoord[Octree.NodePositions.XYZ]));
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vxYZ, normalTop, textureCoord[Octree.NodePositions.xYZ]));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vxYz, color, normalTop));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vXYZ, color, normalTop));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vxYZ, color, normalTop));
 
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vxYz, normalTop, textureCoord[Octree.NodePositions.xYz]));
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vXYz, normalTop, textureCoord[Octree.NodePositions.XYz]));
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vXYZ, normalTop, textureCoord[Octree.NodePositions.XYZ]));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vxYz, color, normalTop));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vXYz, color, normalTop));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vXYZ, color, normalTop));
 
-                lstVertexQuadMesh.Add(new VertexPositionColor(vxYz, color));
-                lstVertexQuadMesh.Add(new VertexPositionColor(vXYz, color));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vxYz, Color.White));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vXYz, Color.White));
 
-                lstVertexQuadMesh.Add(new VertexPositionColor(vxYz, color));
-                lstVertexQuadMesh.Add(new VertexPositionColor(vxYZ, color));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vxYz, Color.White));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vxYZ, Color.White));
 
-                lstVertexQuadMesh.Add(new VertexPositionColor(vXYz, color));
-                lstVertexQuadMesh.Add(new VertexPositionColor(vXYZ, color));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vXYz, Color.White));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vXYZ, Color.White));
 
-                lstVertexQuadMesh.Add(new VertexPositionColor(vxYZ, color));
-                lstVertexQuadMesh.Add(new VertexPositionColor(vXYZ, color));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vxYZ, Color.White));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vXYZ, Color.White));
             }
 
             if (yFace)
             {
                 Vector3 normalBottom = new Vector3(0.0f, -1.0f, 0.0f) * size;
 
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vxyz, normalBottom, textureCoord[Octree.NodePositions.xyz]));
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vxyZ, normalBottom, textureCoord[Octree.NodePositions.xyZ]));
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vXyZ, normalBottom, textureCoord[Octree.NodePositions.XyZ]));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vxyz, color, normalBottom));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vxyZ, color, normalBottom));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vXyZ, color, normalBottom));
 
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vxyz, normalBottom, textureCoord[Octree.NodePositions.xyz]));
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vXyZ, normalBottom, textureCoord[Octree.NodePositions.XyZ]));
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vXyz, normalBottom, textureCoord[Octree.NodePositions.Xyz]));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vxyz, color, normalBottom));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vXyZ, color, normalBottom));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vXyz, color, normalBottom));
 
-                lstVertexQuadMesh.Add(new VertexPositionColor(vxyz, color));
-                lstVertexQuadMesh.Add(new VertexPositionColor(vXyz, color));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vxyz, Color.White));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vXyz, Color.White));
 
-                lstVertexQuadMesh.Add(new VertexPositionColor(vxyz, color));
-                lstVertexQuadMesh.Add(new VertexPositionColor(vxyZ, color));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vxyz, Color.White));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vxyZ, Color.White));
 
-                lstVertexQuadMesh.Add(new VertexPositionColor(vXyz, color));
-                lstVertexQuadMesh.Add(new VertexPositionColor(vXyZ, color));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vXyz, Color.White));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vXyZ, Color.White));
 
-                lstVertexQuadMesh.Add(new VertexPositionColor(vxyZ, color));
-                lstVertexQuadMesh.Add(new VertexPositionColor(vXyZ, color));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vxyZ, Color.White));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vXyZ, Color.White));
             }
 
             if (xFace)
             {
                 Vector3 normalLeft = new Vector3(-1.0f, 0.0f, 0.0f) * size;
 
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vxYz, normalLeft, textureCoord[Octree.NodePositions.xYz]));
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vxyZ, normalLeft, textureCoord[Octree.NodePositions.xyZ]));
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vxyz, normalLeft, textureCoord[Octree.NodePositions.xyz]));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vxYz, color, normalLeft));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vxyZ, color, normalLeft));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vxyz, color, normalLeft));
 
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vxYZ, normalLeft, textureCoord[Octree.NodePositions.xYZ]));
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vxyZ, normalLeft, textureCoord[Octree.NodePositions.xyZ]));
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vxYz, normalLeft, textureCoord[Octree.NodePositions.xYz]));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vxYZ, color, normalLeft));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vxyZ, color, normalLeft));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vxYz, color, normalLeft));
 
-                lstVertexQuadMesh.Add(new VertexPositionColor(vxyz, color));
-                lstVertexQuadMesh.Add(new VertexPositionColor(vxYz, color));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vxyz, Color.White));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vxYz, Color.White));
 
-                lstVertexQuadMesh.Add(new VertexPositionColor(vxyz, color));
-                lstVertexQuadMesh.Add(new VertexPositionColor(vxyZ, color));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vxyz, Color.White));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vxyZ, Color.White));
 
-                lstVertexQuadMesh.Add(new VertexPositionColor(vxYz, color));
-                lstVertexQuadMesh.Add(new VertexPositionColor(vxYZ, color));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vxYz, Color.White));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vxYZ, Color.White));
 
-                lstVertexQuadMesh.Add(new VertexPositionColor(vxyZ, color));
-                lstVertexQuadMesh.Add(new VertexPositionColor(vxYZ, color));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vxyZ, Color.White));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vxYZ, Color.White));
             }
 
             if (XFace)
             {
                 Vector3 normalRight = new Vector3(1.0f, 0.0f, 0.0f) * size;
 
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vXYz, normalRight, textureCoord[Octree.NodePositions.XYz]));
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vXyz, normalRight, textureCoord[Octree.NodePositions.Xyz]));
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vXyZ, normalRight, textureCoord[Octree.NodePositions.XyZ]));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vXYz, color, normalRight));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vXyz, color, normalRight));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vXyZ, color, normalRight));
 
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vXYZ, normalRight, textureCoord[Octree.NodePositions.XYZ]));
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vXYz, normalRight, textureCoord[Octree.NodePositions.XYz]));
-                lstVertexTriMesh.Add(new VertexPositionNormalTexture(vXyZ, normalRight, textureCoord[Octree.NodePositions.XyZ]));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vXYZ, color, normalRight));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vXYz, color, normalRight));
+                lstVertexTriColorMesh.Add(new VertexPositionColorNormal(vXyZ, color, normalRight));
 
-                lstVertexQuadMesh.Add(new VertexPositionColor(vXyz, color));
-                lstVertexQuadMesh.Add(new VertexPositionColor(vXYz, color));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vXyz, Color.White));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vXYz, Color.White));
 
-                lstVertexQuadMesh.Add(new VertexPositionColor(vXyz, color));
-                lstVertexQuadMesh.Add(new VertexPositionColor(vXyZ, color));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vXyz, Color.White));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vXyZ, Color.White));
 
-                lstVertexQuadMesh.Add(new VertexPositionColor(vXYz, color));
-                lstVertexQuadMesh.Add(new VertexPositionColor(vXYZ, color));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vXYz, Color.White));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vXYZ, Color.White));
 
-                lstVertexQuadMesh.Add(new VertexPositionColor(vXyZ, color));
-                lstVertexQuadMesh.Add(new VertexPositionColor(vXYZ, color));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vXyZ, Color.White));
+                lstVertexQuadMesh.Add(new VertexPositionColor(vXYZ, Color.White));
             }
         }
     }

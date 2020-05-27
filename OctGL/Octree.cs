@@ -41,13 +41,13 @@ namespace OctGL
         public string id;
 
         public BoundingBox bb;
-        public Vector2[] textureCoord;
+        public Color color;
 
         public Game game;
 
         public short depthMax;
 
-        public short octantTextureCoordinates;
+        public bool calculateColor;
         public bool optimizeOctantFaces;
         public string fillDirection;
 
@@ -69,7 +69,7 @@ namespace OctGL
         private Cube cube;
 
         public int verticesNumber;
-        public VertexPositionNormalTexture[] verticesTriMesh;
+        public VertexPositionColorNormal[] verticesTriColorMesh;
         public VertexPositionColor[] verticesQuadMesh;
 
         private AABBTriangleIntersection aabbint;
@@ -83,15 +83,16 @@ namespace OctGL
             aabbint = new AABBTriangleIntersection();
             startTime = null;
             endTime = null;
+            color = new Color(100, 200, 100);
         }
 
-        public Octree(Game game, short depthMax, short octantTextureCoordinates, bool optimizeOctantFaces, string fillDirection) : this(game)
+        public Octree(Game game, short depthMax, bool calculateColor, bool optimizeOctantFaces, string fillDirection) : this(game)
         {
             this.depthMax = depthMax;
             octants = 0;
             octantsMax = System.Math.Pow(8, depthMax);
             textureCoordinates = 0;
-            this.octantTextureCoordinates = octantTextureCoordinates;
+            this.calculateColor = calculateColor;
             this.optimizeOctantFaces = optimizeOctantFaces;
             this.fillDirection = fillDirection;
         }
@@ -223,31 +224,14 @@ namespace OctGL
                     {
                         current.state = OctreeStates.Full;
 
-                        switch (root.octantTextureCoordinates)
+                        if (!root.calculateColor)
                         {
-                            case 0:
-                                current.textureCoord = null;
-                                break;
-                            case 1:
-                                current.textureCoord = new Vector2[8];
-                                for (int j = 0; j < 8; j++)
-                                {
-                                    current.textureCoord[j] = current.childs[0].textureCoord[j];
-                                }
-                                break;
-                            case 8:
-                                current.textureCoord = new Vector2[8];
-                                current.textureCoord[0] = current.childs[7].textureCoord[0];
-                                current.textureCoord[1] = current.childs[1].textureCoord[1];
-                                current.textureCoord[2] = current.childs[5].textureCoord[2];
-                                current.textureCoord[3] = current.childs[3].textureCoord[3];
-                                current.textureCoord[4] = current.childs[6].textureCoord[4];
-                                current.textureCoord[5] = current.childs[0].textureCoord[5];
-                                current.textureCoord[6] = current.childs[4].textureCoord[6];
-                                current.textureCoord[7] = current.childs[2].textureCoord[7];
-                                break;
+                            current.color = root.color;
                         }
-
+                        else {
+                            current.color = current.childs[0].color;
+                        }
+                                
                         for (int j = 0; j < 8; j++)
                         {
                             current.childs[j] = null;
@@ -364,6 +348,33 @@ namespace OctGL
             }
         }
 
+        public void ChangeColor(Color newColor)
+        {
+            Stack<Octree> st = new Stack<Octree>();
+            Octree current = this;
+
+            st.Push(current);
+            while (st.Count > 0)
+            {
+                current = st.Pop();
+
+                if (current.state == OctreeStates.Mixted)
+                {
+                    if (current.childs != null)
+                    {
+                        for (short i = 0; i < 8; i++)
+                        {
+                            st.Push(current.childs[i]);
+                        }
+                    }
+                }
+                else if (current.state == OctreeStates.Full)
+                {
+                    current.color = newColor;
+                }
+            }
+        }
+
         public void Fill()
         {
             buildingStage = "Filling...";
@@ -406,6 +417,7 @@ namespace OctGL
                             foreach (Octree octant in lstFillOctants)
                             {
                                 octant.state = OctreeStates.Full;
+                                octant.color = current.color;
                             }
                         }
                     }
@@ -458,9 +470,7 @@ namespace OctGL
 
                 if (current.state == OctreeStates.Full)
                 {
-                    current.textureCoord = new Vector2[8];
-
-                    if (root.octantTextureCoordinates == 1)
+                    if (root.calculateColor == true)
                     {
                         textureCoordinates ++;
                         var pos = new Vector3();
@@ -468,40 +478,7 @@ namespace OctGL
                         pos.Y = current.bb.Min.Y + ((current.bb.Max.Y - current.bb.Min.Y) * 0.5f);
                         pos.Z = current.bb.Min.Z + ((current.bb.Max.Z - current.bb.Min.Z) * 0.5f);
 
-                        Vector2 textCoordInt = CalculateTextureCoordinates(pos.X, pos.Y, pos.Z, current);
-                        for (int i = 0; i < 8; i++)
-                        {
-                            current.textureCoord[i].X = textCoordInt.X;
-                            current.textureCoord[i].Y = textCoordInt.Y;
-                        }
-                    }
-                    else if (root.octantTextureCoordinates == 8)
-                    {
-                        textureCoordinates += 8;
-                        Vector2 textCoordInt = CalculateTextureCoordinates(current.bb.Min.X, current.bb.Min.Y, current.bb.Min.Z, current);
-                        current.textureCoord[NodePositions.xyz].X = textCoordInt.X;
-                        current.textureCoord[NodePositions.xyz].Y = textCoordInt.Y;
-                        textCoordInt = CalculateTextureCoordinates(current.bb.Min.X, current.bb.Min.Y, current.bb.Max.Z, current);
-                        current.textureCoord[NodePositions.xyZ].X = textCoordInt.X;
-                        current.textureCoord[NodePositions.xyZ].Y = textCoordInt.Y;
-                        textCoordInt = CalculateTextureCoordinates(current.bb.Min.X, current.bb.Max.Y, current.bb.Min.Z, current);
-                        current.textureCoord[NodePositions.xYz].X = textCoordInt.X;
-                        current.textureCoord[NodePositions.xYz].Y = textCoordInt.Y;
-                        textCoordInt = CalculateTextureCoordinates(current.bb.Min.X, current.bb.Max.Y, current.bb.Max.Z, current);
-                        current.textureCoord[NodePositions.xYZ].X = textCoordInt.X;
-                        current.textureCoord[NodePositions.xYZ].Y = textCoordInt.Y;
-                        textCoordInt = CalculateTextureCoordinates(current.bb.Max.X, current.bb.Min.Y, current.bb.Min.Z, current);
-                        current.textureCoord[NodePositions.Xyz].X = textCoordInt.X;
-                        current.textureCoord[NodePositions.Xyz].Y = textCoordInt.Y;
-                        textCoordInt = CalculateTextureCoordinates(current.bb.Max.X, current.bb.Min.Y, current.bb.Max.Z, current);
-                        current.textureCoord[NodePositions.XyZ].X = textCoordInt.X;
-                        current.textureCoord[NodePositions.XyZ].Y = textCoordInt.Y;
-                        textCoordInt = CalculateTextureCoordinates(current.bb.Max.X, current.bb.Max.Y, current.bb.Min.Z, current);
-                        current.textureCoord[NodePositions.XYz].X = textCoordInt.X;
-                        current.textureCoord[NodePositions.XYz].Y = textCoordInt.Y;
-                        textCoordInt = CalculateTextureCoordinates(current.bb.Max.X, current.bb.Max.Y, current.bb.Max.Z, current);
-                        current.textureCoord[NodePositions.XYZ].X = textCoordInt.X;
-                        current.textureCoord[NodePositions.XYZ].Y = textCoordInt.Y;
+                        current.color = CalculateColor(pos.X, pos.Y, pos.Z, current);
                     }
                 }
                 else if (state == OctreeStates.Mixted)
@@ -530,6 +507,7 @@ namespace OctGL
             Octree nXplus = null;
             Octree nXminus = null;
             List<VertexPositionNormalTexture> lstVerticesTriMesh = new List<VertexPositionNormalTexture>();
+            List<VertexPositionColorNormal> lstVerticesTriColorMesh = new List<VertexPositionColorNormal>();
             List<VertexPositionColor> lstVerticesQuadMesh = new List<VertexPositionColor>();
 
             verticesNumber = 0;
@@ -541,7 +519,7 @@ namespace OctGL
 
                 if (current.state == OctreeStates.Full)
                 {
-                    cube = new Cube(current.bb, current.textureCoord, Color.White);
+                    cube = new Cube(current.bb, current.color);
 
                     if (optimizeOctantFaces)
                     {
@@ -557,7 +535,7 @@ namespace OctGL
                         Task.WaitAll(tasks);
                     }
 
-                    cube.AddVertices(lstVerticesTriMesh, lstVerticesQuadMesh,
+                    cube.AddVertices(lstVerticesTriMesh, lstVerticesTriColorMesh, lstVerticesQuadMesh,
                         (nZplus == null || nZplus.state != OctreeStates.Full),
                         (nZminus == null || nZminus.state != OctreeStates.Full),
                         (nYplus == null || nYplus.state != OctreeStates.Full),
@@ -580,7 +558,7 @@ namespace OctGL
                 }
             }
 
-            verticesTriMesh = lstVerticesTriMesh.ToArray();
+            verticesTriColorMesh = lstVerticesTriColorMesh.ToArray();
             verticesQuadMesh = lstVerticesQuadMesh.ToArray();
         }
 
@@ -695,15 +673,8 @@ namespace OctGL
                 {
                     state = OctreeStates.Full;
 
-                    switch (root.octantTextureCoordinates)
-                    {
-                        case 1:
+                    if (root.calculateColor==true)
                             root.textureCoordinatesMax ++;
-                            break;
-                        case 8:
-                            root.textureCoordinatesMax += 8;
-                            break;
-                    }
 
                     // If we are filling octree we don't need to increment counter
                     if (root.octants < root.octantsMax)
@@ -744,18 +715,21 @@ namespace OctGL
                 }
             }
             else {
-                if (verticesTriMesh != null && verticesTriMesh.Length > 0)
+                if (verticesTriColorMesh != null && verticesTriColorMesh.Length > 0)
                 {
+                    effect.TextureEnabled = false;
+                    effect.LightingEnabled = true;
+                    effect.VertexColorEnabled = true;
                     foreach (EffectPass pass in effect.CurrentTechnique.Passes)
                     {
                         pass.Apply();
-                        device.DrawUserPrimitives(Microsoft.Xna.Framework.Graphics.PrimitiveType.TriangleList, verticesTriMesh, 0, verticesTriMesh.Length / 3);
+                        device.DrawUserPrimitives(Microsoft.Xna.Framework.Graphics.PrimitiveType.TriangleList, verticesTriColorMesh, 0, verticesTriColorMesh.Length / 3);
                     }
                 }
             }
         }
 
-        private Vector2 CalculateTextureCoordinates(float X, float Y, float Z, Octree current)
+        private Color CalculateColor(float X, float Y, float Z, Octree current)
         {
             if (root.bModel.oScene.Meshes[0].TextureCoordinateChannels[0].Count > 0)
             {
@@ -771,6 +745,9 @@ namespace OctGL
                 Vector2 textCoordT0 = new Vector2();
                 Vector2 textCoordT1 = new Vector2();
                 Vector2 textCoordT2 = new Vector2();
+
+                Texture2D tex = null;
+                Color[] texData = null;
 
                 for (int r = 0; r < current.bModel.oScene.MeshCount; r++)
                 {
@@ -803,18 +780,28 @@ namespace OctGL
                                 root.bModel.oScene.Meshes[r].TextureCoordinateChannels[0][f.Indices[1]].Y);
                             textCoordT2 = new Vector2(root.bModel.oScene.Meshes[r].TextureCoordinateChannels[0][f.Indices[2]].X,
                                 root.bModel.oScene.Meshes[r].TextureCoordinateChannels[0][f.Indices[2]].Y);
-                        }
 
+                            tex = root.bModel.textureModels[r];
+                            texData = root.bModel.texturesData[r];
+                        }
                     }
                 }
 
                 var coord = new Barycentric(closestT0, closestT1, closestT2, closestPoint);
-
-                return coord.Interpolate(textCoordT0, textCoordT1, textCoordT2);
+                Vector2 res = coord.Interpolate(textCoordT0, textCoordT1, textCoordT2);
+                
+                if (tex != null)
+                {
+                    return BModel.GetPixel(texData, (int)(tex.Width * System.Math.Abs(res.X % 1.0)), (int)(tex.Height * System.Math.Abs(res.Y % 1.0)), tex.Width);
+                }
+                else
+                {
+                    return root.color;
+                }
             }
             else
             {
-                return new Vector2(0, 0);
+                return root.color;
             }
         }
 
@@ -828,7 +815,7 @@ namespace OctGL
                 childs[i].parent = this;
                 childs[i].root = this.root;
                 childs[i].faceUP = true;
-                childs[i].textureCoord = new Vector2[8];
+                childs[i].color = root.color;
                 childs[i].id = this.id + i.ToString();
             }
 

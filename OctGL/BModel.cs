@@ -17,7 +17,8 @@ namespace OctGL
 
         public BoundingBox bb;
         public Texture2D tex;
-        Texture2D[] textureModels;
+        public Texture2D[] textureModels;
+        public Microsoft.Xna.Framework.Color[][] texturesData;
 
         VertexBuffer[] vertexBuffers;
         IndexBuffer[] indexBuffers;
@@ -211,6 +212,7 @@ namespace OctGL
             vertexBuffers = new VertexBuffer[count];
             indexBuffers = new IndexBuffer[count];
             textureModels = new Texture2D[count];
+            texturesData = new Microsoft.Xna.Framework.Color[count][];
 
             VertexPositionNormalTexture[] vertices;
             short[] indices;
@@ -280,11 +282,23 @@ namespace OctGL
                     if (lstMtlT != null && lstMtlT.Length > 0)
                     {
                         textureModels[m] = LoadTextureStream(string.Concat(Path.GetDirectoryName(file), "\\", lstMtlT[0].FilePath));
+                        texturesData[m] = GetPixels(textureModels[m]);
                     }
                 }
             }
 
             verticesDrawNormals = lstVerticesDrawNormals.ToArray();
+        }
+
+        public static Microsoft.Xna.Framework.Color GetPixel(Microsoft.Xna.Framework.Color[] colors, int x, int y, int width)
+        {
+            return colors[x + (y * width)];
+        }
+        public static Microsoft.Xna.Framework.Color[] GetPixels(Texture2D texture)
+        {
+            Microsoft.Xna.Framework.Color[] colors1D = new Microsoft.Xna.Framework.Color[texture.Width * texture.Height];
+            texture.GetData<Microsoft.Xna.Framework.Color> (colors1D);
+            return colors1D;
         }
 
         public void Center()

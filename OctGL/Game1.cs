@@ -42,14 +42,12 @@ namespace OctGL
         //BasicEffect for rendering
         BasicEffect basicEffect;
 
-        public Texture2D textureOctree;
         public Texture2D textureModel;
-        public Texture2D textureOctreeDefault;
         public Texture2D textureModelDefault;
 
         public BModel bModel;
         public short octreeDepth;
-        public short octantTextureCoordinates;
+        public bool calculatecolor;
         public bool optimizeOctantFaces;
         public bool optimizeOctree;
         public string fillDirection;
@@ -75,10 +73,10 @@ namespace OctGL
             projection = "P";
 
             octreeDepth = 4;
-            octantTextureCoordinates = 1;
+            calculatecolor = true;
             optimizeOctantFaces = true;
             optimizeOctree = true;
-            fillDirection = "Z-";
+            fillDirection = "No fill";
 
             octree = new Octree(this);
 
@@ -140,7 +138,6 @@ namespace OctGL
         protected override void LoadContent()
         {
             // TODO: use this.Content to load your game content here
-            setOctreeColor(System.Drawing.Color.Yellow);
             setModelColor(System.Drawing.Color.Orange);
 
             ui.CreateUI();
@@ -148,8 +145,8 @@ namespace OctGL
 
         public void setOctreeColor(System.Drawing.Color color)
         {
-            textureOctreeDefault = Texture2D.FromStream(this.GraphicsDevice, GenerateSolidImage(color));
-            textureOctree = textureOctreeDefault;
+            octree.ChangeColor(new Microsoft.Xna.Framework.Color(color.R, color.G, color.B));
+            octree.BuildMesh();
         }
 
         public void setModelColor(System.Drawing.Color color)
@@ -375,7 +372,6 @@ namespace OctGL
 
             if (showOctree && octree != null)
             {
-                basicEffect.Parameters["Texture"].SetValue(textureOctree);
                 octree.RenderToDevice(basicEffect, GraphicsDevice, wireframe);
             }
 
