@@ -128,6 +128,13 @@ namespace OctGL
                         break;
                     case '1':
                         current.state = OctreeStates.Full;
+
+                        // Load octant color
+                        int endColorSection = serialization.IndexOf("#", i + 2);
+                        String[] colorSection = serialization.Substring(i+2, endColorSection - i -2).Split(',');
+                        current.color = new Color(int.Parse(colorSection[0]), int.Parse(colorSection[1]), int.Parse(colorSection[2]));
+
+                        i = endColorSection;
                         octantsFilled++;
                         break;
                     case '(':
@@ -154,6 +161,7 @@ namespace OctGL
             Stack<Octree> st = new Stack<Octree>();
             Octree current = this;
             String serialization = "";
+            int j = 0;
 
             serialization = current.bb.Max.X + "#" + current.bb.Max.Y + "#" + current.bb.Max.Z + "\r\n";
             serialization += current.bb.Min.X + "#" + current.bb.Min.Y + "#" + current.bb.Min.Z + "\r\n";
@@ -178,11 +186,15 @@ namespace OctGL
                 else if (current.state == OctreeStates.Full)
                 {
                     serialization += "1";
+
+                    // Save octant color
+                    serialization += "#" + current.color.R.ToString() + "," + current.color.G.ToString() + "," + current.color.B.ToString() + "#";
                 }
                 else
                 {
                     serialization += "0";
                 }
+                j += 1;
             }
 
             System.IO.File.WriteAllText(filePath, serialization);
