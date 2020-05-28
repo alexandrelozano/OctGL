@@ -786,15 +786,22 @@ namespace OctGL
                             closestT0 = t0;
                             closestT1 = t1;
                             closestT2 = t2;
-                            textCoordT0 = new Vector2(root.bModel.oScene.Meshes[r].TextureCoordinateChannels[0][f.Indices[0]].X,
-                                root.bModel.oScene.Meshes[r].TextureCoordinateChannels[0][f.Indices[0]].Y);
-                            textCoordT1 = new Vector2(root.bModel.oScene.Meshes[r].TextureCoordinateChannels[0][f.Indices[1]].X,
-                                root.bModel.oScene.Meshes[r].TextureCoordinateChannels[0][f.Indices[1]].Y);
-                            textCoordT2 = new Vector2(root.bModel.oScene.Meshes[r].TextureCoordinateChannels[0][f.Indices[2]].X,
-                                root.bModel.oScene.Meshes[r].TextureCoordinateChannels[0][f.Indices[2]].Y);
 
-                            tex = root.bModel.textureModels[r];
-                            texData = root.bModel.texturesData[r];
+                            if (root.bModel.oScene.Meshes[r].TextureCoordinateChannels[0].Count > 0)
+                            {
+                                textCoordT0 = new Vector2(root.bModel.oScene.Meshes[r].TextureCoordinateChannels[0][f.Indices[0]].X,
+                                    root.bModel.oScene.Meshes[r].TextureCoordinateChannels[0][f.Indices[0]].Y);
+                                textCoordT1 = new Vector2(root.bModel.oScene.Meshes[r].TextureCoordinateChannels[0][f.Indices[1]].X,
+                                    root.bModel.oScene.Meshes[r].TextureCoordinateChannels[0][f.Indices[1]].Y);
+                                textCoordT2 = new Vector2(root.bModel.oScene.Meshes[r].TextureCoordinateChannels[0][f.Indices[2]].X,
+                                    root.bModel.oScene.Meshes[r].TextureCoordinateChannels[0][f.Indices[2]].Y);
+                            }
+
+                            if (root.bModel.textureModels[r] != null)
+                            {
+                                tex = root.bModel.textureModels[r];
+                                texData = root.bModel.texturesData[r];
+                            }
                         }
                     }
                 }
