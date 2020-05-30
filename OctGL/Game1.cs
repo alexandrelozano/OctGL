@@ -269,9 +269,7 @@ namespace OctGL
 
                 if (Keyboard.GetState().IsKeyDown(Keys.OemMinus))
                 {
-                    Octree B = octree.Reverse();
-                    B.BuildMesh();
-                    this.octree = B;
+                    ui.ClickReverse();
                     System.Threading.Thread.Sleep(500);
                 }
 
@@ -380,13 +378,21 @@ namespace OctGL
             ui.txtRotationV.Text = string.Format("V: {0}", camera.rotationv.ToString("000."));
             ui.txtDistance.Text = string.Format("D: {0}", camera.distance.ToString("00.00"));
             ui.txtOctreeBuild.Text = string.Format("Octants: {0} of {1}", octree.octants, octree.octantsMax);
-            if (octree.buildingStage == "Texture coordinates...")
+            if (octree.currentOperation == "Texture coordinates...")
             {
                 ui.txtOctreeBuildInfo.Text = string.Format("Texture coordinates: {0} of {1}", octree.textureCoordinates, octree.textureCoordinatesMax);
             }
-            else
+            else if(octree.currentOperation == "Saving to disk...")
             {
-                ui.txtOctreeBuildInfo.Text = octree.buildingStage;
+                ui.txtOctreeBuildInfo.Text = string.Format("Octants saved: {0} of {1}", octree.octants, octree.octantsMax);
+            }
+            else if (octree.currentOperation == "Open from disk...")
+            {
+                ui.txtOctreeBuildInfo.Text = string.Format("Octants loaded: {0}", octree.octants);
+            }
+            else            
+            {
+                ui.txtOctreeBuildInfo.Text = octree.currentOperation;
             }
             ui.txtOctreeVertices.Text = string.Format("Vertices: {0}", octree.verticesNumber);
             ui.txtOctreeElapsedTime.Text = string.Format("{0}ms", octree.elapsedTime().TotalMilliseconds.ToString("0."));

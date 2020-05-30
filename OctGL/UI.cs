@@ -115,16 +115,21 @@ namespace OctGL
                 {
                     if (ofd.FilePath != "" && ofd.Result)
                     {
-                        game.octree.startTime = DateTime.Now;
-                        game.bModel = new BModel(game.GraphicsDevice);
-                        game.octree.OpenOctree(ofd.FilePath);
-                        game.octree.BuildMesh();
-                        game.camera.rotationh = 0f;
-                        game.camera.rotationv = 0f;
-                        game.camera.distance = game.octree.bb.Max.Length() * 3;
-                        game.axis.size = game.octree.bb.Max.Length();
-                        game.boundary.bb = game.octree.bb;
-                        game.octree.endTime = DateTime.Now;
+                        new Thread(() =>
+                        {
+                            Thread.CurrentThread.IsBackground = true;
+                            game.octree.startTime = DateTime.Now;
+                            game.bModel = new BModel(game.GraphicsDevice);
+                            game.octree.OpenOctree(ofd.FilePath);
+                            game.octree.BuildMesh();
+                            game.camera.rotationh = 0f;
+                            game.camera.rotationv = 0f;
+                            game.camera.distance = game.octree.bb.Max.Length() * 3;
+                            game.axis.size = game.octree.bb.Max.Length();
+                            game.boundary.bb = game.octree.bb;
+                            game.octree.currentOperation = "";
+                            game.octree.endTime = DateTime.Now;
+                        }).Start();
                     }
                 };
             };
@@ -145,7 +150,14 @@ namespace OctGL
                 {
                     if (ofd.FilePath != "" && ofd.Result)
                     {
-                        game.octree.SaveOctree(ofd.FilePath);
+                        new Thread(() =>
+                        {
+                            Thread.CurrentThread.IsBackground = true;
+                            game.octree.startTime = DateTime.Now;
+                            game.octree.SaveOctree(ofd.FilePath);
+                            game.octree.currentOperation = "";
+                            game.octree.endTime = DateTime.Now;
+                        }).Start();
                     }
                 };
 
@@ -153,6 +165,30 @@ namespace OctGL
             _menuFile.Items.Add(_mnuSaveOctree);
 
             _menuFile.Items.Add(CreateBuildFromOperation());
+
+            var _menuEdit = new MenuItem();
+            _menuEdit.Id = "_menuEdit";
+            _menuEdit.Text = "Edit";
+
+            var _mnuReverse = new MenuItem();
+            _mnuReverse.Id = "_mnuReverse";
+            _mnuReverse.Text = "Reverse              -";
+            _mnuReverse.Selected += (s, a) =>
+            {
+                ClickReverse();
+            };
+            _menuEdit.Items.Add(_mnuReverse);
+
+            var _mnuOptimize = new MenuItem();
+            _mnuOptimize.Id = "_mnuOptimize";
+            _mnuOptimize.Text = "Optimize";
+            _mnuOptimize.Selected += (s, a) =>
+            {
+                ClickOptimize();
+            };
+            _menuEdit.Items.Add(_mnuOptimize);
+
+            _menuEdit.Items.Add(CreateFill());
 
             var _menuOptions = new MenuItem();
             _menuOptions.Id = "_menuOptions";
@@ -448,12 +484,26 @@ namespace OctGL
             verticalMenu1.HorizontalAlignment = Myra.Graphics2D.UI.HorizontalAlignment.Stretch;
             verticalMenu1.VerticalAlignment = Myra.Graphics2D.UI.VerticalAlignment.Top;
             verticalMenu1.Items.Add(_menuFile);
+            verticalMenu1.Items.Add(_menuEdit);
             verticalMenu1.Items.Add(_menuOptions);
             verticalMenu1.Items.Add(_menuView);
 
             Desktop.Widgets.Add(verticalMenu1);
             Desktop.Widgets.Add(horizontalBox);
             
+        }
+
+        public void ClickOptimize()
+        {
+            game.octree.Optimize();
+            game.octree.BuildMesh();
+        }
+
+        public void ClickReverse()
+        {
+            Octree B = game.octree.Reverse();
+            B.BuildMesh();
+            game.octree = B;
         }
 
         public void ClickModelHide()
@@ -1112,7 +1162,7 @@ namespace OctGL
                                 game.octree.Optimize();
                             }
                             game.octree.BuildMesh();
-                            game.octree.buildingStage = "";
+                            game.octree.currentOperation = "";
                             game.octree.endTime = DateTime.Now;
                         }).Start();
                     };
@@ -1124,6 +1174,90 @@ namespace OctGL
             };
 
             return _mnuBuildFromModel;
+        }
+
+        public MenuItem CreateFill()
+        {
+            var _mnuFill = new MenuItem();
+            _mnuFill.Id = "_mnuFill";
+            _mnuFill.Text = "Fill...";
+            _mnuFill.Selected += (s, a) =>
+            {
+                var _window = new Window();
+                _window.Title = "Fill";
+                _window.Width = 300;
+
+                var grid = new Grid
+                {
+                    ShowGridLines = false,
+                    ColumnSpacing = 8,
+                    RowSpacing = 8,
+                    HorizontalAlignment = HorizontalAlignment.Stretch
+                };
+                _window.Content = grid;
+
+                // Set partitioning configuration
+                grid.ColumnsProportions.Add(new Proportion
+                {
+                    Type = Myra.Graphics2D.UI.ProportionType.Auto,
+                });
+                grid.ColumnsProportions.Add(new Proportion
+                {
+                    Type = Myra.Graphics2D.UI.ProportionType.Auto,
+                });
+                
+
+                grid.RowsProportions.Add(new Proportion());
+                grid.RowsProportions.Add(new Proportion());
+                
+                var lblFillObject = new Label();
+                lblFillObject.Text = "Fill object direction";
+                lblFillObject.GridRow = 0;
+                lblFillObject.GridColumn = 0;
+                grid.Widgets.Add(lblFillObject);
+
+                var comboFillDirection = new ComboBox
+                {
+                    GridColumn = 1,
+                    GridRow = 0
+                };
+
+                comboFillDirection.Items.Add(new ListItem("Z+"));
+                comboFillDirection.Items.Add(new ListItem("Z-"));
+                comboFillDirection.Items.Add(new ListItem("X+"));
+                comboFillDirection.Items.Add(new ListItem("X-"));
+                comboFillDirection.Items.Add(new ListItem("Y+"));
+                comboFillDirection.Items.Add(new ListItem("Y-"));
+                comboFillDirection.Items[0].IsSelected = true;
+                comboFillDirection.SelectedIndexChanged += (s1, a1) =>
+                {
+                    game.fillDirection = comboFillDirection.SelectedItem.Text;
+                };
+                comboFillDirection.Width = 80;
+                grid.Widgets.Add(comboFillDirection);
+
+                var bttFill = new TextButton();
+                bttFill.GridRow = 2;
+                bttFill.GridColumn = 1;
+                bttFill.Text = "Fill";
+                bttFill.Width = 100;
+                bttFill.Click += (s1, a1) =>
+                {
+                    _window.Close();
+
+                    game.octree.startTime = DateTime.Now;
+                    game.octree.Fill();
+                    game.octree.BuildMesh();
+                    game.octree.currentOperation = "";
+                    game.octree.endTime = DateTime.Now;
+                };
+                
+                grid.Widgets.Add(bttFill);
+
+                _window.ShowModal();
+            };
+
+            return _mnuFill;
         }
 
         public MenuItem CreateModelInfo()

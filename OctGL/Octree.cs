@@ -57,7 +57,7 @@ namespace OctGL
         public double volume;
         public double area;
 
-        public string buildingStage;
+        public string currentOperation;
 
         public double textureCoordinates;
         public double textureCoordinatesMax;
@@ -104,6 +104,9 @@ namespace OctGL
             Octree current = this;
             Stack<Octree> st = new Stack<Octree>();
 
+            currentOperation = "Open from disk...";
+            octants = 0;
+
             System.IO.StreamReader file = new System.IO.StreamReader(filePath);
 
             serialization = file.ReadLine();
@@ -131,7 +134,7 @@ namespace OctGL
 
                         // Load octant color
                         int endColorSection = serialization.IndexOf("#", i + 2);
-                        String[] colorSection = serialization.Substring(i+2, endColorSection - i -2).Split(',');
+                        String[] colorSection = serialization.Substring(i + 2, endColorSection - i - 2).Split(',');
                         current.color = new Color(int.Parse(colorSection[0]), int.Parse(colorSection[1]), int.Parse(colorSection[2]));
 
                         i = endColorSection;
@@ -149,6 +152,7 @@ namespace OctGL
                 }
 
                 i++;
+                octants++;
                 current = st.Pop();
             }
 
@@ -160,49 +164,53 @@ namespace OctGL
         {
             Stack<Octree> st = new Stack<Octree>();
             Octree current = this;
-            String serialization = "";
-            int j = 0;
 
-            serialization = current.bb.Max.X + "#" + current.bb.Max.Y + "#" + current.bb.Max.Z + "\r\n";
-            serialization += current.bb.Min.X + "#" + current.bb.Min.Y + "#" + current.bb.Min.Z + "\r\n";
+            currentOperation = "Saving to disk...";
+            octants = 0;
 
-            st.Push(current);
-            while (st.Count > 0)
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter(filePath))
             {
-                current = st.Pop();
+                file.WriteLine(current.bb.Max.X + "#" + current.bb.Max.Y + "#" + current.bb.Max.Z);
+                file.WriteLine(current.bb.Min.X + "#" + current.bb.Min.Y + "#" + current.bb.Min.Z);
 
-                if (current.state == OctreeStates.Mixted)
+                st.Push(current);
+                while (st.Count > 0)
                 {
-                    serialization += "(";
+                    current = st.Pop();
 
-                    if (current.childs != null)
+                    if (current.state == OctreeStates.Mixted)
                     {
-                        for (short i = 0; i < 8; i++)
+                        file.Write("(");
+
+                        if (current.childs != null)
                         {
-                            st.Push(current.childs[i]);
+                            for (short i = 0; i < 8; i++)
+                            {
+                                st.Push(current.childs[i]);
+                            }
                         }
                     }
-                }
-                else if (current.state == OctreeStates.Full)
-                {
-                    serialization += "1";
+                    else if (current.state == OctreeStates.Full)
+                    {
+                        file.Write("1");
 
-                    // Save octant color
-                    serialization += "#" + current.color.R.ToString() + "," + current.color.G.ToString() + "," + current.color.B.ToString() + "#";
+                        // Save octant color
+                        file.Write("#" + current.color.R.ToString() + "," + current.color.G.ToString() + "," + current.color.B.ToString() + "#");
+                    }
+                    else
+                    {
+                        file.Write("0");
+                    }
+                    octants += 1;
                 }
-                else
-                {
-                    serialization += "0";
-                }
-                j += 1;
             }
 
-            System.IO.File.WriteAllText(filePath, serialization);
+            currentOperation = "";
         }
 
         public void Optimize()
         {
-            buildingStage = "Optimizing...";
+            currentOperation = "Optimizing...";
 
             Stack<Octree> st = new Stack<Octree>();
             Octree current = this;
@@ -240,10 +248,11 @@ namespace OctGL
                         {
                             current.color = root.color;
                         }
-                        else {
+                        else
+                        {
                             current.color = current.childs[0].color;
                         }
-                                
+
                         for (int j = 0; j < 8; j++)
                         {
                             current.childs[j] = null;
@@ -332,7 +341,7 @@ namespace OctGL
                         };
                     Task.WaitAll(tasks);
 
-                    if (nZplus == null || nZplus.state==OctreeStates.Empty)
+                    if (nZplus == null || nZplus.state == OctreeStates.Empty)
                     {
                         area += (current.bb.Max.X - current.bb.Min.X) * (current.bb.Max.Y - current.bb.Min.Y);
                     }
@@ -389,7 +398,7 @@ namespace OctGL
 
         public void Fill()
         {
-            buildingStage = "Filling...";
+            currentOperation = "Filling...";
 
             Stack<Octree> st = new Stack<Octree>();
             Octree current = this;
@@ -423,7 +432,7 @@ namespace OctGL
                             neighborDown = neighborDown.FindNeighborDown();
                         }
 
-                        // Set full if we don't arrive to limits
+                        // Set fill if we don't arrive to limits
                         if (neighborDown != null)
                         {
                             foreach (Octree octant in lstFillOctants)
@@ -439,7 +448,7 @@ namespace OctGL
 
         public Octree FindNeighborDown()
         {
-            Octree neighborDown=null;
+            Octree neighborDown = null;
 
             switch (root.fillDirection)
             {
@@ -468,7 +477,7 @@ namespace OctGL
 
         public void BuildTextureCoordinates()
         {
-            buildingStage = "Texture coordinates...";
+            currentOperation = "Texture coordinates...";
 
             Stack<Octree> st = new Stack<Octree>();
             Octree current = this;
@@ -484,7 +493,7 @@ namespace OctGL
                 {
                     if (root.calculateColor == true)
                     {
-                        textureCoordinates ++;
+                        textureCoordinates++;
                         var pos = new Vector3();
                         pos.X = current.bb.Min.X + ((current.bb.Max.X - current.bb.Min.X) * 0.5f);
                         pos.Y = current.bb.Min.Y + ((current.bb.Max.Y - current.bb.Min.Y) * 0.5f);
@@ -508,7 +517,7 @@ namespace OctGL
 
         public void BuildMesh()
         {
-            buildingStage = "Building mesh...";
+            currentOperation = "Building mesh...";
 
             Stack<Octree> st = new Stack<Octree>();
             Octree current = this;
@@ -576,7 +585,7 @@ namespace OctGL
 
         public void Build(BModel bModel)
         {
-            buildingStage = "Building...";
+            currentOperation = "Building...";
             this.bModel = bModel;
             bb = bModel.bb;
             textureCoordinates = 0;
@@ -622,9 +631,9 @@ namespace OctGL
                                 if (root.bModel.oScene.Meshes[r].Normals[f.Indices[0]].Z < 0 ||
                                     root.bModel.oScene.Meshes[r].Normals[f.Indices[1]].Z < 0 ||
                                     root.bModel.oScene.Meshes[r].Normals[f.Indices[2]].Z < 0)
-                                        faceUP = false;
-                                    else
-                                        faceUP = true;
+                                    faceUP = false;
+                                else
+                                    faceUP = true;
                                 break;
                             case ("Z+"):
                                 if (root.bModel.oScene.Meshes[r].Normals[f.Indices[0]].Z > 0 ||
@@ -678,15 +687,15 @@ namespace OctGL
                 }
             }
 
-            
+
             if (intersect)
             {
                 if (level == root.depthMax)
                 {
                     state = OctreeStates.Full;
 
-                    if (root.calculateColor==true)
-                            root.textureCoordinatesMax ++;
+                    if (root.calculateColor == true)
+                        root.textureCoordinatesMax++;
 
                     // If we are filling octree we don't need to increment counter
                     if (root.octants < root.octantsMax)
@@ -726,7 +735,8 @@ namespace OctGL
                     }
                 }
             }
-            else {
+            else
+            {
                 if (verticesTriColorMesh != null && verticesTriColorMesh.Length > 0)
                 {
                     effect.TextureEnabled = false;
@@ -808,7 +818,7 @@ namespace OctGL
 
                 var coord = new Barycentric(closestT0, closestT1, closestT2, closestPoint);
                 Vector2 res = coord.Interpolate(textCoordT0, textCoordT1, textCoordT2);
-                
+
                 if (tex != null && res.X != float.NaN && res.Y != float.NaN)
                 {
                     return BModel.GetPixel(texData, (int)(tex.Width * System.Math.Abs(res.X % 1.0)), (int)(tex.Height * System.Math.Abs(res.Y % 1.0)), tex.Width);
@@ -1392,7 +1402,8 @@ namespace OctGL
             if (A.state == OctreeStates.Full && B.state == OctreeStates.Full)
             {
                 result.state = OctreeStates.Full;
-            }else if (A.state == OctreeStates.Mixted && B.state == OctreeStates.Mixted)
+            }
+            else if (A.state == OctreeStates.Mixted && B.state == OctreeStates.Mixted)
             {
                 result.state = OctreeStates.Mixted;
                 result.CreateChilds(A.bb);
@@ -1400,7 +1411,8 @@ namespace OctGL
                 {
                     result.childs[c] = result.childs[c].Intersection(A.childs[c], B.childs[c]);
                 }
-            }else if (A.state == OctreeStates.Full && B.state == OctreeStates.Mixted)
+            }
+            else if (A.state == OctreeStates.Full && B.state == OctreeStates.Mixted)
             {
                 result.state = OctreeStates.Mixted;
                 result.CreateChilds(A.bb);
@@ -1438,13 +1450,16 @@ namespace OctGL
             if (A.state == OctreeStates.Empty)
             {
                 result.state = OctreeStates.Empty;
-            }else if(B.state == OctreeStates.Full)
+            }
+            else if (B.state == OctreeStates.Full)
             {
                 result.state = OctreeStates.Empty;
-            }else if(A.state == OctreeStates.Full && B.state == OctreeStates.Empty)
+            }
+            else if (A.state == OctreeStates.Full && B.state == OctreeStates.Empty)
             {
                 result.state = OctreeStates.Full;
-            }else if(A.state == OctreeStates.Mixted && B.state == OctreeStates.Mixted)
+            }
+            else if (A.state == OctreeStates.Mixted && B.state == OctreeStates.Mixted)
             {
                 result.state = OctreeStates.Mixted;
                 result.CreateChilds(A.bb);
@@ -1452,7 +1467,8 @@ namespace OctGL
                 {
                     result.childs[c] = result.childs[c].Substract(A.childs[c], B.childs[c]);
                 }
-            }else if(A.state == OctreeStates.Mixted && B.state == OctreeStates.Empty)
+            }
+            else if (A.state == OctreeStates.Mixted && B.state == OctreeStates.Empty)
             {
                 result = A.Union(A);
             }
