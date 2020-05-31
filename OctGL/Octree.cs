@@ -912,15 +912,14 @@ namespace OctGL
             childs[NodePositions.XYZ].bb.Max.Z = bb.Max.Z;
             childs[NodePositions.XYZ].position = 7;
 
-            for (short i = 0; i < 8; i++)
+            Parallel.ForEach(childs, (child) =>
             {
-                Octree ch = childs[i];
-                ch.level = level + 1;
-                CreateChild(ch, i);
-            }
+                child.level = level + 1;
+                CreateChild(child);
+            });
         }
 
-        private void CreateChild(Octree child, short i)
+        private void CreateChild(Octree child)
         {
             child.bModel = RemoveNonIntersectingFaces(bModel, child.bb);
             child.BuildLevel();
