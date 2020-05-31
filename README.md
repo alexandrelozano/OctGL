@@ -61,6 +61,9 @@ This project is for [octree](https://en.wikipedia.org/wiki/Octree) spatial repre
   </tr>
 </table>
 
+### Sponza level 8 sample ##
+![Sample model normals](./OctGL/Resources/sponza_8.png)
+
 Compiled with [MonoGame 3.7.1](https://community.monogame.net/t/monogame-3-7-1-release/11173)  
 UI created with [Myra](https://github.com/rds1983/Myra)  
 Load 3D file models with [AssimpNET](https://github.com/assimp/assimp-net)  
