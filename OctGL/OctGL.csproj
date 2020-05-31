@@ -109,6 +109,7 @@
     <Content Include="Resources\samplespherenormals.jpg" />
     <Content Include="Resources\sphere.png" />
     <Content Include="Resources\sphere_reverse.png" />
+    <Content Include="Resources\sponza_8.png" />
     <Content Include="SampleModels\Dragon\dragon.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
