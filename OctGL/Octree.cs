@@ -201,6 +201,7 @@ namespace OctGL
                     {
                         file.Write("0");
                     }
+                    file.Flush();
                     octants += 1;
                 }
             }
@@ -531,6 +532,7 @@ namespace OctGL
             List<VertexPositionColorNormal> lstVerticesTriColorMesh = new List<VertexPositionColorNormal>();
             List<VertexPositionColor> lstVerticesQuadMesh = new List<VertexPositionColor>();
 
+            octants = 0;
             verticesNumber = 0;
 
             st.Push(current);
@@ -577,6 +579,8 @@ namespace OctGL
                         }
                     }
                 }
+
+                octants++;
             }
 
             verticesTriColorMesh = lstVerticesTriColorMesh.ToArray();
