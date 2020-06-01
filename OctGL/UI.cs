@@ -102,6 +102,8 @@ namespace OctGL
 
             _menuFile.Items.Add(CreateBuildFromModel());
 
+            _menuFile.Items.Add(CreateBuildDirectToDisk());
+
             var _mnuOpenOctree = new MenuItem();
             _mnuOpenOctree.Id = "_menuOpenOctree";
             _mnuOpenOctree.Text = "Open octree...";
@@ -696,6 +698,205 @@ namespace OctGL
             game.camera.rotationv = 45;
         }
 
+        public MenuItem CreateBuildDirectToDisk()
+        {
+            var _mnuBuildDirectToDisk = new MenuItem();
+            _mnuBuildDirectToDisk.Id = "_mnuBuildWhileSavingToDisk";
+            _mnuBuildDirectToDisk.Text = "Build direct to disk...";
+            _mnuBuildDirectToDisk.Selected += (s, a) =>
+            {
+                var _window = new Window();
+                _window.Title = "Build direct to disk";
+                _window.Width = 350;
+
+                var bttFileOctree = new TextButton();
+                var lblFileOctree = new Label();
+                var textFileOctree = new TextBox();
+
+                var grid = new Grid
+                {
+                    ShowGridLines = false,
+                    ColumnSpacing = 8,
+                    RowSpacing = 8,
+                    HorizontalAlignment = HorizontalAlignment.Stretch
+                };
+                _window.Content = grid;
+
+                grid.ColumnsProportions.Add(new Proportion
+                {
+                    Type = Myra.Graphics2D.UI.ProportionType.Auto,
+                });
+                grid.ColumnsProportions.Add(new Proportion
+                {
+                    Type = Myra.Graphics2D.UI.ProportionType.Auto,
+                });
+                grid.ColumnsProportions.Add(new Proportion
+                {
+                    Type = Myra.Graphics2D.UI.ProportionType.Auto,
+                });
+
+                grid.RowsProportions.Add(new Proportion());
+                grid.RowsProportions.Add(new Proportion());
+                grid.RowsProportions.Add(new Proportion());
+                grid.RowsProportions.Add(new Proportion());
+
+                var lblSize = new Label();
+                lblSize.Text = "Depth";
+                lblSize.GridRow = 0;
+                lblSize.GridColumn = 0;
+                grid.Widgets.Add(lblSize);
+
+                var depth = new SpinButton();
+                depth.HorizontalAlignment = HorizontalAlignment.Stretch;
+                depth.Maximum = 15;
+                depth.Minimum = 1;
+                depth.DecimalPlaces = 0;
+                depth.Increment = 1;
+                depth.GridRow = 0;
+                depth.GridColumn = 1;
+                depth.Width = 50;
+                depth.Value = game.octreeDepth;
+                depth.ValueChanged += (s1, a1) =>
+                {
+                    game.octreeDepth = (short)depth.Value;
+                };
+                grid.Widgets.Add(depth);
+
+                var lblMeshFile = new Label();
+                lblMeshFile.Text = "Mesh file";
+                lblMeshFile.GridRow = 1;
+                lblMeshFile.GridColumn = 0;
+                grid.Widgets.Add(lblMeshFile);
+
+                var textMeshFile = new TextBox();
+                textMeshFile.Text = "";
+                textMeshFile.GridRow = 1;
+                textMeshFile.GridColumn = 1;
+                textMeshFile.Width = 240;
+                grid.Widgets.Add(textMeshFile);
+
+                var bttMeshFile = new TextButton();
+                bttMeshFile.GridRow = 1;
+                bttMeshFile.GridColumn = 2;
+                bttMeshFile.Text = "...";
+                bttMeshFile.Click += (s1, a1) =>
+                {
+                    var ofd = new FileDialog(FileDialogMode.OpenFile);
+                    ofd.Filter = "*.*";
+                    ofd.ShowModal();
+                    ofd.FilePath = Directory.GetCurrentDirectory() + "\\SampleModels\\";
+                    ofd.Closed += (s2, a2) =>
+                    {
+                        if (ofd.FilePath != "" && ofd.Result)
+                        {
+                            textMeshFile.Text = ofd.FilePath;
+                        }
+                    };
+                };
+                grid.Widgets.Add(bttMeshFile);
+
+                lblFileOctree.Text = "Octree";
+                lblFileOctree.GridRow = 2;
+                lblFileOctree.GridColumn = 0;
+                grid.Widgets.Add(lblFileOctree);
+
+                textFileOctree.Text = "";
+                textFileOctree.GridRow = 2;
+                textFileOctree.GridColumn = 1;
+                textFileOctree.Width = 240;
+                grid.Widgets.Add(textFileOctree);
+
+                bttFileOctree.GridRow = 2;
+                bttFileOctree.GridColumn = 2;
+                bttFileOctree.Text = "...";
+                bttFileOctree.Click += (s1, a1) =>
+                {
+                    var ofd = new FileDialog(FileDialogMode.SaveFile);
+                    ofd.Filter = "*.oct";
+                    ofd.ShowModal();
+                    ofd.FilePath = Directory.GetCurrentDirectory() + "\\SampleModels\\";
+                    ofd.Closed += (s2, a2) =>
+                    {
+                        if (ofd.FilePath != "" && ofd.Result)
+                        {
+                            textFileOctree.Text = ofd.FilePath;
+                        }
+                    };
+                };
+                grid.Widgets.Add(bttFileOctree);
+
+                var bttBuild = new TextButton();
+                bttBuild.GridRow = 3;
+                bttBuild.GridColumn = 1;
+                bttBuild.Text = "Build";
+                bttBuild.Width = 100;
+                bttBuild.Click += (s1, a1) =>
+                {
+                    if (textMeshFile.Text == "")
+                    {
+                        showMessage("No mesh file selected", "Alert");
+                        return;
+                    }
+
+                    if (textFileOctree.Text == "")
+                    {
+                        showMessage("No octree file selected", "Alert");
+                        return;
+                    }
+
+                    _window.Close();
+
+                    ClickBoundaryHide();
+                    ClickModelHide();
+                    ClickOctreeHide();
+
+                    String result = game.bModel.Load(textMeshFile.Text);
+
+                    if (result == "")
+                    {
+                        new Thread(() =>
+                        {
+                            Thread.CurrentThread.IsBackground = true;
+
+                            game.camera.rotationh = 0f;
+                            game.camera.rotationv = 0f;
+                            game.camera.distance = game.bModel.bb.Max.Length() * 3;
+                            game.axis.size = game.bModel.bb.Max.Length();
+                            game.boundary.bb = game.bModel.bb;
+                            if (game.bModel.tex != null)
+                            {
+                                game.textureModel = game.bModel.tex;
+                            }
+                            else
+                            {
+                                game.textureModel = game.textureModelDefault;
+                            }
+
+                            game.octree = new Octree(game, (short)depth.Value, true, false, "No fill");
+
+                            game.octree.startTime = DateTime.Now;
+                            game.octree.fileSaveOctree = new System.IO.StreamWriter(textFileOctree.Text, false);
+                            game.octree.fileSaveOctree.AutoFlush = true;
+                            game.octree.fileSaveOctree.WriteLine(game.bModel.bb.Max.X + "#" + game.bModel.bb.Max.Y + "#" + game.bModel.bb.Max.Z);
+                            game.octree.fileSaveOctree.WriteLine(game.bModel.bb.Min.X + "#" + game.bModel.bb.Min.Y + "#" + game.bModel.bb.Min.Z);
+                            game.octree.Build(game.bModel);
+                            game.octree.fileSaveOctree.Close();
+                            game.octree.fileSaveOctree = null;
+                            game.octree.currentOperation = "";
+                            game.octree.endTime = DateTime.Now;
+
+                        }).Start();
+                    }
+
+                };
+                grid.Widgets.Add(bttBuild);
+
+                _window.ShowModal();
+            };
+
+            return _mnuBuildDirectToDisk;
+        }
+
         public MenuItem CreateBuildFromOperation()
         {
             var _mnuBuildFromOperation = new MenuItem();
@@ -991,7 +1192,7 @@ namespace OctGL
 
                 var depth = new SpinButton();
                 depth.HorizontalAlignment = HorizontalAlignment.Stretch;
-                depth.Maximum = 10;
+                depth.Maximum = 15;
                 depth.Minimum = 1;
                 depth.DecimalPlaces = 0;
                 depth.Increment = 1;

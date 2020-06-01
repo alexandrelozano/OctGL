@@ -40,6 +40,8 @@ namespace OctGL
         public bool faceUP;
         public string id;
 
+        public System.IO.StreamWriter fileSaveOctree;
+
         public BoundingBox bb;
         public Color color;
 
@@ -613,9 +615,9 @@ namespace OctGL
             for (int r = 0; r < bModel.oScene.MeshCount; r++)
             {
                 Mesh m = bModel.oScene.Meshes[r];
-                for (int k = 0; k < m.FaceCount; k++)
-                {
-                    Face f = m.Faces[k];
+
+                Parallel.ForEach<Face>(m.Faces, new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount }, (f, state) => {
+
                     Vector3[] tri = new Vector3[3];
 
                     for (int i = 0; i < 3; i++)
@@ -681,16 +683,15 @@ namespace OctGL
                                 break;
                         }
 
-                        break;
+                        state.Break();
                     }
-                }
+                });
 
                 if (intersect)
                 {
                     break;
                 }
             }
-
 
             if (intersect)
             {
@@ -707,16 +708,45 @@ namespace OctGL
                         root.octants++;
                     }
                     root.octantsFilled++;
+
+                    if (root.fileSaveOctree != null)
+                    {
+                        root.fileSaveOctree.Write("1");
+                        var pos = new Vector3();
+                        pos.X = bb.Min.X + ((bb.Max.X - bb.Min.X) * 0.5f);
+                        pos.Y = bb.Min.Y + ((bb.Max.Y - bb.Min.Y) * 0.5f);
+                        pos.Z = bb.Min.Z + ((bb.Max.Z - bb.Min.Z) * 0.5f);
+
+                        color = CalculateColor(pos.X, pos.Y, pos.Z, this);
+                        root.fileSaveOctree.Write("#" + color.R.ToString() + "," + color.G.ToString() + "," + color.B.ToString() + "#");
+                    }
                 }
                 else
                 {
                     state = OctreeStates.Mixted;
+                    if (root.fileSaveOctree != null)
+                    {
+                        root.fileSaveOctree.Write("(");
+                    }
                     CreateChilds(bb);
+
+                    if (root.fileSaveOctree != null)
+                    {
+                        for (int i = 0; i < 8; i++)
+                        {
+                            childs[i].parent = null;
+                            childs[i] = null;
+                        }
+                    }
                 }
             }
             else
             {
                 state = OctreeStates.Empty;
+                if (root.fileSaveOctree != null)
+                {
+                    root.fileSaveOctree.Write("0");
+                }
 
                 // If we are filling octree we don't need to increment counter
                 if (root.octants < root.octantsMax)
@@ -916,11 +946,17 @@ namespace OctGL
             childs[NodePositions.XYZ].bb.Max.Z = bb.Max.Z;
             childs[NodePositions.XYZ].position = 7;
 
-            Parallel.ForEach(childs, (child) =>
+            //Parallel.ForEach(childs, (child) =>
+            //{
+            //    child.level = level + 1;
+            //    CreateChild(child);
+            //});
+
+            foreach(Octree child in childs)
             {
                 child.level = level + 1;
                 CreateChild(child);
-            });
+            }
         }
 
         private void CreateChild(Octree child)
