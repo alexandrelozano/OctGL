@@ -146,7 +146,6 @@ namespace OctGL
         public void setOctreeColor(System.Drawing.Color color)
         {
             octree.ChangeColor(new Microsoft.Xna.Framework.Color(color.R, color.G, color.B));
-            octree.BuildMesh();
         }
 
         public void setModelColor(System.Drawing.Color color)
@@ -370,7 +369,7 @@ namespace OctGL
 
             if (showOctree && octree != null)
             {
-                octree.RenderToDevice(basicEffect, GraphicsDevice, wireframe);
+                octree.Render(basicEffect, GraphicsDevice, wireframe);
             }
 
             ui.txtFPS.Text = string.Format("FPS: {0}", frameCounter.AverageFramesPerSecond.ToString("000.00"));

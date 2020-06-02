@@ -123,7 +123,6 @@ namespace OctGL
                             game.octree.startTime = DateTime.Now;
                             game.bModel = new BModel(game.GraphicsDevice);
                             game.octree.OpenOctree(ofd.FilePath);
-                            game.octree.BuildMesh();
                             game.camera.rotationh = 0f;
                             game.camera.rotationv = 0f;
                             game.camera.distance = game.octree.bb.Max.Length() * 3;
@@ -498,13 +497,11 @@ namespace OctGL
         public void ClickOptimize()
         {
             game.octree.Optimize();
-            game.octree.BuildMesh();
         }
 
         public void ClickReverse()
         {
             Octree B = game.octree.Reverse();
-            B.BuildMesh();
             game.octree = B;
         }
 
@@ -1073,7 +1070,6 @@ namespace OctGL
                             break;
                     }
 
-                    game.octree.BuildMesh();
                     game.camera.rotationh = 0f;
                     game.camera.rotationv = 0f;
                     game.camera.distance = game.octree.bb.Max.Length() * 3;
@@ -1181,7 +1177,6 @@ namespace OctGL
                 grid.RowsProportions.Add(new Proportion());
                 grid.RowsProportions.Add(new Proportion());
                 grid.RowsProportions.Add(new Proportion());
-                grid.RowsProportions.Add(new Proportion());
 
                 // Add widgets
                 var lblSize = new Label();
@@ -1271,37 +1266,21 @@ namespace OctGL
                 };
                 grid.Widgets.Add(chkOptimizeOctree);
 
-                var lblOptimizeOctantFaces = new Label();
-                lblOptimizeOctantFaces.Text = "Optimize octant faces";
-                lblOptimizeOctantFaces.GridRow = 5;
-                lblOptimizeOctantFaces.GridColumn = 0;
-                grid.Widgets.Add(lblOptimizeOctantFaces);
-
-                var chkOptimizeOctantFaces = new CheckBox();
-                chkOptimizeOctantFaces.GridRow = 5;
-                chkOptimizeOctantFaces.GridColumn = 1;
-                chkOptimizeOctantFaces.IsPressed = game.optimizeOctantFaces;
-                chkOptimizeOctantFaces.Click += (s1, a1) =>
-                {
-                    game.optimizeOctantFaces = chkOptimizeOctantFaces.IsPressed;
-                };
-                grid.Widgets.Add(chkOptimizeOctantFaces);
-
                 var lblFile = new Label();
                 lblFile.Text = "File";
-                lblFile.GridRow = 6;
+                lblFile.GridRow = 5;
                 lblFile.GridColumn = 0;
                 grid.Widgets.Add(lblFile);
 
                 var textFile = new TextBox();
                 textFile.Text = "";
-                textFile.GridRow = 6;
+                textFile.GridRow = 5;
                 textFile.GridColumn = 1;
                 textFile.Width = 300;
                 grid.Widgets.Add(textFile);
 
                 var bttFile = new TextButton();
-                bttFile.GridRow = 6;
+                bttFile.GridRow = 5;
                 bttFile.GridColumn = 2;
                 bttFile.Text = "...";
                 bttFile.Click += (s1, a1) =>
@@ -1320,7 +1299,7 @@ namespace OctGL
                 grid.Widgets.Add(bttFile);
 
                 var bttBuild = new TextButton();
-                bttBuild.GridRow = 7;
+                bttBuild.GridRow = 6;
                 bttBuild.GridColumn = 1;
                 bttBuild.Text = "Build";
                 bttBuild.Width = 100;
@@ -1353,7 +1332,6 @@ namespace OctGL
                             Thread.CurrentThread.IsBackground = true;
                             game.octree.startTime = DateTime.Now;
                             game.octree.Build(game.bModel);
-                            game.octree.BuildTextureCoordinates();
                             if (game.fillDirection != "No fill")
                             {
                                 game.octree.Fill();
@@ -1362,7 +1340,6 @@ namespace OctGL
                             {
                                 game.octree.Optimize();
                             }
-                            game.octree.BuildMesh();
                             game.octree.currentOperation = "";
                             game.octree.endTime = DateTime.Now;
                         }).Start();
@@ -1448,7 +1425,6 @@ namespace OctGL
 
                     game.octree.startTime = DateTime.Now;
                     game.octree.Fill();
-                    game.octree.BuildMesh();
                     game.octree.currentOperation = "";
                     game.octree.endTime = DateTime.Now;
                 };

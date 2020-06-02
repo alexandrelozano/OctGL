@@ -64,15 +64,17 @@ namespace OctGL
         public double textureCoordinates;
         public double textureCoordinatesMax;
 
+        VertexPositionColor[] arrVerticesQuadMesh;
+        VertexPositionColorNormal[] arrVerticesTriColorMesh;
+
         public DateTime? startTime;
         public DateTime? endTime;
 
         private BModel bModel;
         private Cube cube;
+        private bool rendered;
 
         public int verticesNumber;
-        public VertexPositionColorNormal[] verticesTriColorMesh;
-        public VertexPositionColor[] verticesQuadMesh;
 
         private AABBTriangleIntersection aabbint;
 
@@ -161,7 +163,6 @@ namespace OctGL
             file.Close();
         }
 
-
         public void SaveOctree(String filePath)
         {
             Stack<Octree> st = new Stack<Octree>();
@@ -172,6 +173,7 @@ namespace OctGL
 
             using (System.IO.StreamWriter file = new System.IO.StreamWriter(filePath))
             {
+                file.AutoFlush = true;
                 file.WriteLine(current.bb.Max.X + "#" + current.bb.Max.Y + "#" + current.bb.Max.Z);
                 file.WriteLine(current.bb.Min.X + "#" + current.bb.Min.Y + "#" + current.bb.Min.Z);
 
@@ -203,7 +205,6 @@ namespace OctGL
                     {
                         file.Write("0");
                     }
-                    file.Flush();
                     octants += 1;
                 }
             }
@@ -478,117 +479,6 @@ namespace OctGL
             return neighborDown;
         }
 
-        public void BuildTextureCoordinates()
-        {
-            currentOperation = "Texture coordinates...";
-
-            Stack<Octree> st = new Stack<Octree>();
-            Octree current = this;
-
-            textureCoordinates = 0;
-
-            st.Push(current);
-            while (st.Count > 0)
-            {
-                current = st.Pop();
-
-                if (current.state == OctreeStates.Full)
-                {
-                    if (root.calculateColor == true)
-                    {
-                        textureCoordinates++;
-                        var pos = new Vector3();
-                        pos.X = current.bb.Min.X + ((current.bb.Max.X - current.bb.Min.X) * 0.5f);
-                        pos.Y = current.bb.Min.Y + ((current.bb.Max.Y - current.bb.Min.Y) * 0.5f);
-                        pos.Z = current.bb.Min.Z + ((current.bb.Max.Z - current.bb.Min.Z) * 0.5f);
-
-                        current.color = CalculateColor(pos.X, pos.Y, pos.Z, current);
-                    }
-                }
-                else if (state == OctreeStates.Mixted)
-                {
-                    if (current.childs != null)
-                    {
-                        for (short i = 0; i < 8; i++)
-                        {
-                            st.Push(current.childs[i]);
-                        }
-                    }
-                }
-            }
-        }
-
-        public void BuildMesh()
-        {
-            currentOperation = "Building mesh...";
-
-            Stack<Octree> st = new Stack<Octree>();
-            Octree current = this;
-            Octree nZplus = null;
-            Octree nZminus = null;
-            Octree nYplus = null;
-            Octree nYminus = null;
-            Octree nXplus = null;
-            Octree nXminus = null;
-            List<VertexPositionNormalTexture> lstVerticesTriMesh = new List<VertexPositionNormalTexture>();
-            List<VertexPositionColorNormal> lstVerticesTriColorMesh = new List<VertexPositionColorNormal>();
-            List<VertexPositionColor> lstVerticesQuadMesh = new List<VertexPositionColor>();
-
-            octants = 0;
-            verticesNumber = 0;
-
-            st.Push(current);
-            while (st.Count > 0)
-            {
-                current = st.Pop();
-
-                if (current.state == OctreeStates.Full)
-                {
-                    cube = new Cube(current.bb, current.color);
-
-                    if (optimizeOctantFaces)
-                    {
-                        var tasks = new Task[6]
-                        {
-                        Task.Factory.StartNew(() => {nZplus = current.FindNeighborZPlus(); }),
-                        Task.Factory.StartNew(() => {nZminus = current.FindNeighborZMinus(); }),
-                        Task.Factory.StartNew(() => {nYplus = current.FindNeighborYPlus(); }),
-                        Task.Factory.StartNew(() => {nYminus = current.FindNeighborYMinus(); }),
-                        Task.Factory.StartNew(() => {nXplus = current.FindNeighborXPlus(); }),
-                        Task.Factory.StartNew(() => {nXminus = current.FindNeighborXMinus(); })
-                        };
-                        Task.WaitAll(tasks);
-                    }
-
-                    cube.AddVertices(lstVerticesTriMesh, lstVerticesTriColorMesh, lstVerticesQuadMesh,
-                        (nZplus == null || nZplus.state != OctreeStates.Full),
-                        (nZminus == null || nZminus.state != OctreeStates.Full),
-                        (nYplus == null || nYplus.state != OctreeStates.Full),
-                        (nYminus == null || nYminus.state != OctreeStates.Full),
-                        (nXplus == null || nXplus.state != OctreeStates.Full),
-                        (nXminus == null || nXminus.state != OctreeStates.Full));
-
-                    verticesNumber = lstVerticesTriMesh.Count;
-                }
-                else if (current.state == OctreeStates.Mixted)
-                {
-
-                    if (current.childs != null)
-                    {
-                        for (short i = 0; i < 8; i++)
-                        {
-                            st.Push(current.childs[i]);
-                        }
-                    }
-                }
-
-                octants++;
-            }
-
-            verticesTriColorMesh = lstVerticesTriColorMesh.ToArray();
-            verticesQuadMesh = lstVerticesQuadMesh.ToArray();
-        }
-
         public void Build(BModel bModel)
         {
             currentOperation = "Building...";
@@ -709,15 +599,16 @@ namespace OctGL
                     }
                     root.octantsFilled++;
 
+                    var pos = new Vector3();
+                    pos.X = bb.Min.X + ((bb.Max.X - bb.Min.X) * 0.5f);
+                    pos.Y = bb.Min.Y + ((bb.Max.Y - bb.Min.Y) * 0.5f);
+                    pos.Z = bb.Min.Z + ((bb.Max.Z - bb.Min.Z) * 0.5f);
+
+                    color = CalculateColor(pos.X, pos.Y, pos.Z, this);
+
                     if (root.fileSaveOctree != null)
                     {
                         root.fileSaveOctree.Write("1");
-                        var pos = new Vector3();
-                        pos.X = bb.Min.X + ((bb.Max.X - bb.Min.X) * 0.5f);
-                        pos.Y = bb.Min.Y + ((bb.Max.Y - bb.Min.Y) * 0.5f);
-                        pos.Z = bb.Min.Z + ((bb.Max.Z - bb.Min.Z) * 0.5f);
-
-                        color = CalculateColor(pos.X, pos.Y, pos.Z, this);
                         root.fileSaveOctree.Write("#" + color.R.ToString() + "," + color.G.ToString() + "," + color.B.ToString() + "#");
                     }
                 }
@@ -728,7 +619,7 @@ namespace OctGL
                     {
                         root.fileSaveOctree.Write("(");
                     }
-                    CreateChilds(bb);
+                    CreateChilds(bb);                       
 
                     if (root.fileSaveOctree != null)
                     {
@@ -756,30 +647,131 @@ namespace OctGL
             }
         }
 
-        public void RenderToDevice(BasicEffect effect, GraphicsDevice device, bool wireframe)
+        public void Render(BasicEffect effect, GraphicsDevice device, bool wireframe)
         {
+            Stack<Octree> st = new Stack<Octree>();
+            Octree current = this;
+            this.verticesNumber = 0;
+
             if (wireframe)
             {
-                if (verticesQuadMesh != null && verticesQuadMesh.Length > 0)
-                {
-                    foreach (EffectPass pass in effect.CurrentTechnique.Passes)
-                    {
-                        pass.Apply();
-                        device.DrawUserPrimitives(Microsoft.Xna.Framework.Graphics.PrimitiveType.LineList, verticesQuadMesh, 0, verticesQuadMesh.Length / 2);
-                    }
-                }
+                effect.TextureEnabled = false;
+                effect.LightingEnabled = false;
+                effect.VertexColorEnabled = true;
             }
             else
             {
-                if (verticesTriColorMesh != null && verticesTriColorMesh.Length > 0)
+                effect.TextureEnabled = false;
+                effect.LightingEnabled = true;
+                effect.VertexColorEnabled = true;
+            }
+
+            foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+
+                st.Push(current);
+                while (st.Count > 0)
                 {
-                    effect.TextureEnabled = false;
-                    effect.LightingEnabled = true;
-                    effect.VertexColorEnabled = true;
-                    foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+                    current = st.Pop();
+
+                    if (current.arrVerticesTriColorMesh != null && current.arrVerticesTriColorMesh.Length > 0)
                     {
-                        pass.Apply();
-                        device.DrawUserPrimitives(Microsoft.Xna.Framework.Graphics.PrimitiveType.TriangleList, verticesTriColorMesh, 0, verticesTriColorMesh.Length / 3);
+                        if (wireframe)
+                        {
+                            device.DrawUserPrimitives(Microsoft.Xna.Framework.Graphics.PrimitiveType.LineList, current.arrVerticesQuadMesh, 0, current.arrVerticesQuadMesh.Length / 2);
+                            root.verticesNumber += current.arrVerticesQuadMesh.Length;
+                        }
+                        else
+                        {
+                            device.DrawUserPrimitives(Microsoft.Xna.Framework.Graphics.PrimitiveType.TriangleList, current.arrVerticesTriColorMesh, 0, current.arrVerticesTriColorMesh.Length / 3);
+                            root.verticesNumber += current.arrVerticesTriColorMesh.Length;
+                        }
+                    }
+
+                    if (current.state == OctreeStates.Full)
+                    {
+                        if (current.rendered == false)
+                        {
+                            cube = new Cube(current.bb, current.color);
+
+                            Octree nZplus = null;
+                            Octree nZminus = null;
+                            Octree nYplus = null;
+                            Octree nYminus = null;
+                            Octree nXplus = null;
+                            Octree nXminus = null;
+                            List<VertexPositionColorNormal> lstVerticesTriColorMesh = new List<VertexPositionColorNormal>();
+                            List<VertexPositionColor> lstVerticesQuadMesh = new List<VertexPositionColor>();
+
+                            var tasks = new Task[6]
+                            {
+                            Task.Factory.StartNew(() => {nZplus = current.FindNeighborZPlus(); }),
+                            Task.Factory.StartNew(() => {nZminus = current.FindNeighborZMinus(); }),
+                            Task.Factory.StartNew(() => {nYplus = current.FindNeighborYPlus(); }),
+                            Task.Factory.StartNew(() => {nYminus = current.FindNeighborYMinus(); }),
+                            Task.Factory.StartNew(() => {nXplus = current.FindNeighborXPlus(); }),
+                            Task.Factory.StartNew(() => {nXminus = current.FindNeighborXMinus(); })
+                            };
+                            Task.WaitAll(tasks);
+
+                            cube.AddVertices(lstVerticesTriColorMesh, lstVerticesQuadMesh,
+                                (nZplus == null || nZplus.state != OctreeStates.Full),
+                                (nZminus == null || nZminus.state != OctreeStates.Full),
+                                (nYplus == null || nYplus.state != OctreeStates.Full),
+                                (nYminus == null || nYminus.state != OctreeStates.Full),
+                                (nXplus == null || nXplus.state != OctreeStates.Full),
+                                (nXminus == null || nXminus.state != OctreeStates.Full));
+
+                            current.arrVerticesTriColorMesh = lstVerticesTriColorMesh.ToArray();
+                            current.arrVerticesQuadMesh = lstVerticesQuadMesh.ToArray();
+
+                            Octree parent = current.parent;
+                            Octree dest = this;
+                            while (parent != null)
+                            {
+                                if (parent.arrVerticesTriColorMesh==null || parent.arrVerticesTriColorMesh.Length < 10000)
+                                {
+                                    dest = parent;
+                                }
+                                parent = parent.parent;
+                            }
+
+                            if (dest.arrVerticesTriColorMesh == null)
+                            {
+                                dest.arrVerticesTriColorMesh = new VertexPositionColorNormal[current.arrVerticesTriColorMesh.Length];
+                                current.arrVerticesTriColorMesh.CopyTo(dest.arrVerticesTriColorMesh, 0);
+                                dest.arrVerticesQuadMesh = new VertexPositionColor[current.arrVerticesQuadMesh.Length];
+                                current.arrVerticesQuadMesh.CopyTo(dest.arrVerticesQuadMesh, 0);
+                            }
+                            else
+                            {
+                                var z = new VertexPositionColorNormal[current.arrVerticesTriColorMesh.Length + dest.arrVerticesTriColorMesh.Length];
+                                current.arrVerticesTriColorMesh.CopyTo(z, 0);
+                                dest.arrVerticesTriColorMesh.CopyTo(z, current.arrVerticesTriColorMesh.Length);
+                                dest.arrVerticesTriColorMesh = z;
+                                var y = new VertexPositionColor[current.arrVerticesQuadMesh.Length + dest.arrVerticesQuadMesh.Length];
+                                current.arrVerticesQuadMesh.CopyTo(y, 0);
+                                dest.arrVerticesQuadMesh.CopyTo(y, current.arrVerticesQuadMesh.Length);
+                                dest.arrVerticesQuadMesh = y;
+                            }
+                            current.arrVerticesTriColorMesh = null;
+                            current.arrVerticesQuadMesh = null;
+
+                            current.rendered = true;
+                        }
+                    }else if (current.state == OctreeStates.Mixted)
+                    {
+                        if (current.childs != null)
+                        {
+                            for (short i = 0; i < 8; i++)
+                            {
+                                if (current.childs[i] != null && current.childs[i].state != OctreeStates.Empty)
+                                {
+                                    st.Push(current.childs[i]);
+                                }
+                            }
+                        }
                     }
                 }
             }
